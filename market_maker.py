@@ -16,3 +16,32 @@ from libs import INTEREST_RATE, VOLATILITY
 
 logging.getLogger('client').setLevel('ERROR')
 
+
+class MarketMaker:
+    def __init__(self, instrument_id, reference_id):
+        self.instrument_id = instrument_id
+        self.reference_id = reference_id
+        self.bid = None
+        self.ask = None
+        self.sides = None
+        
+    
+    def set_sides(self, direction):
+        """
+        Set the target side on which the trader makes market
+        
+        Arguments:
+            - direction (str): 'long', 'short' or 'both'
+        """
+        if direction == "long":
+            if self.instrument_id[-1] == 'P':
+                self.sides = ['ask']
+            else:
+                self.sides = ['bid']
+        elif direction == "short":
+            if self.instrument_id[-1] == 'P':
+                self.sides = ['bid']
+            else:
+                self.sides = ['ask']
+        else:
+            self.sides = ['bid', 'ask']
