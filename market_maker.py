@@ -25,6 +25,7 @@ class MarketMaker:
         self.ask = None
         self.sides = None
         self.reference_prices = None
+        self.theoretical_prices = None
     
     def set_sides(self, direction):
         """
@@ -34,15 +35,9 @@ class MarketMaker:
             - direction (str): 'long', 'short' or 'both'
         """
         if direction == "long":
-            if self.instrument_id[-1] == 'P':
-                self.sides = ['ask']
-            else:
-                self.sides = ['bid']
+            self.sides = ['bid']
         elif direction == "short":
-            if self.instrument_id[-1] == 'P':
-                self.sides = ['bid']
-            else:
-                self.sides = ['ask']
+            self.sides = ['ask']
         else:
             self.sides = ['bid', 'ask']
             
@@ -65,5 +60,16 @@ class MarketMaker:
             'bid': bid.price,
             'ask': ask.price
         }
+        
+    
+    def price(self):
+        """
+        Compute the theoretical prices of the instrument on both sides.
+        """
+        self.theoretical_prices = {
+            'bid': self.reference_prices['bid'],
+            'ask': self.reference_prices['ask']
+        }
+        
         
     

@@ -29,18 +29,17 @@ class TestMarketMaker(unittest.TestCase):
     def test_set_sides(self):
         direction = 'short'
         trader = MarketMaker(
-            option_ids[-1],
+            stock_ids[0],
             'NVDA'
             )
         trader.set_sides(direction)
         self.assertListEqual(
             trader.sides, 
-            ['bid']
+            ['ask']
             )
             
     
     def test_collect(self):
-        direction = 'short'
         trader = MarketMaker(
             option_ids[0],
             'NVDA'
@@ -48,4 +47,13 @@ class TestMarketMaker(unittest.TestCase):
         trader.collect(exchange)
         print(trader.reference_prices)
         
+        
+    def test_price(self):
+        trader = MarketMaker(
+            stock_ids[0],
+            'NVDA'
+            )
+        trader.collect(exchange)
+        trader.price()
+        print(trader.theoretical_prices)
         
