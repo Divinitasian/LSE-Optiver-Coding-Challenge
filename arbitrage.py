@@ -1,5 +1,7 @@
 import math
 import logging
+import datetime as dt
+import time
 from libs import calculate_current_time_to_date, expiry_in_years
 from libs import clear_position, print_positions_and_pnl
 from libs import trade_would_breach_position_limit, check_and_get_best_bid_ask
@@ -50,6 +52,7 @@ class Arbitrageur:
                 desiredVolume = min(self.bid_primal.volume, self.ask_hedge.volume)
             # trade on primal book
             if not trade_would_breach_position_limit(exchange, self.primal_id, desiredVolume, side):
+                print(f'- Inserting {side} ioc order in {self.primal_id} for {desiredVolume} @ {primal_price:8.2f}.')
                 response = exchange.insert_order(
                     instrument_id=self.primal_id,
                     price=primal_price,
@@ -61,6 +64,7 @@ class Arbitrageur:
                     # trade on hedge book
                     tradedVolume = exchange.get_trade_history(self.primal_id)[-1].volume
                     if not trade_would_breach_position_limit(exchange, self.hedge_id, tradedVolume, opposite):
+                        print(f'- Inserting {opposite} ioc order in {self.hedge_id} for {tradedVolume} @ {hedge_price:8.2f}.')
                         exchange.insert_order(
                             instrument_id=self.hedge_id,
                             price=hedge_price,
@@ -109,28 +113,31 @@ class FutureSpotArb(Arbitrageur):
 if False: 
     clear_position(exchange)
 
-while True:
-    stocks = [
-        DualListArb('NVDA_DUAL', 'NVDA'),
-        DualListArb('SAN_DUAL', 'SAN'),
-        ]
-    
-    futures = []
-    options = []
-    
-    for id, instrument in exchange.get_instruments().items():
-        if instrument.instrument_type == InstrumentType.STOCK_FUTURE:
-            futures.append(
-                FutureSpotArb(id, instrument.base_instrument_id)
-                )
 
-    arbitrageurs = stocks + futures + options
-    # arbitrage
+stocks = [
+    DualListArb('NVDA_DUAL', 'NVDA'),
+    DualListArb('SAN_DUAL', 'SAN'),
+    ]
+    
+futures = []
+for id, instrument in exchange.get_instruments().items():
+    if instrument.instrument_type == InstrumentType.STOCK_FUTURE:
+        futures.append(
+            FutureSpotArb(id, instrument.base_instrument_id)
+            )
+
+arbitrageurs = stocks + futures
+
+while True:
+    print(f'')
+    print(f'-----------------------------------------------------------------')
+    print(f'TRADE LOOP ITERATION ENTERED AT {str(dt.datetime.now()):18s} UTC.')
+    print(f'-----------------------------------------------------------------')
     for arb in arbitrageurs:
         if arb.get_best_quotes():
             arb.detect()
             arb.trade()
             arb.reset()
-    
+    # time.sleep(2)
     
     
