@@ -24,11 +24,11 @@ class MarketMaker:
         self.bid = None
         self.ask = None
         self.sides = None
-        
+        self.reference_prices = None
     
     def set_sides(self, direction):
         """
-        Set the target side on which the trader makes market
+        Set the target side on which the trader makes market.
         
         Arguments:
             - direction (str): 'long', 'short' or 'both'
@@ -45,3 +45,25 @@ class MarketMaker:
                 self.sides = ['ask']
         else:
             self.sides = ['bid', 'ask']
+            
+    
+    def collect(self, exchange):
+        """
+        Retrieve from exchange the best quote prices of the reference.
+        
+        Argument:
+            - exchange (optibook.Exchange): an exchange API client
+        """
+        while True:
+            exists, bid, ask = check_and_get_best_bid_ask(
+                exchange, 
+                self.reference_id
+                )
+            if exists:
+                break
+        self.reference_prices = {
+            'bid': bid.price,
+            'ask': ask.price
+        }
+        
+    

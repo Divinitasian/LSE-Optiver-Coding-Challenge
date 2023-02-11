@@ -37,5 +37,15 @@ class TestMarketMaker(unittest.TestCase):
             trader.sides, 
             ['bid']
             )
+            
+    
+    def test_collect(self):
+        direction = 'short'
+        trader = MarketMaker(
+            option_ids[0],
+            'NVDA'
+            )
+        trader.collect(exchange)
+        print(trader.reference_prices)
         
         
