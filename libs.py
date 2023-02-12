@@ -15,6 +15,25 @@ POSITION_LIMIT = 100
 TICK_SIZE = 0.10
 
 
+option_ids = [
+    'NVDA_202306_020C',
+    'NVDA_202306_020P',
+    'NVDA_202306_030C',
+    'NVDA_202306_030P',
+    'NVDA_202306_040C',
+    'NVDA_202306_040P',
+    'NVDA_202306_050C',
+    'NVDA_202306_050P',
+    ]
+future_ids = [
+    'NVDA_202306_F',
+    'NVDA_202309_F',
+    'NVDA_202312_F'
+    ]
+stock_ids = [
+    'NVDA_DUAL'
+    ]
+
 def calculate_current_time_to_date(expiry_date) -> float:
     """
     Returns the current total time remaining until some future datetime. The remaining time is provided in fractions of

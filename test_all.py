@@ -7,30 +7,12 @@ exchange = Exchange()
 exchange.connect()
 
 
-option_ids = [
-    'NVDA_202306_020C',
-    'NVDA_202306_020P',
-    'NVDA_202306_030C',
-    'NVDA_202306_030P',
-    'NVDA_202306_040C',
-    'NVDA_202306_040P',
-    'NVDA_202306_050C',
-    'NVDA_202306_050P',
-    ]
-future_ids = [
-    'NVDA_202306_F',
-    'NVDA_202309_F',
-    'NVDA_202312_F'
-    ]
-stock_ids = [
-    'NVDA_DUAL'
-    ]
 
 class TestMarketMaker(unittest.TestCase):
     def test_set_sides(self):
         direction = 'short'
         trader = MarketMaker(
-            stock_ids[0],
+            libs.stock_ids[0],
             'NVDA'
             )
         trader.set_sides(direction)
@@ -42,7 +24,7 @@ class TestMarketMaker(unittest.TestCase):
     
     def test_collect(self):
         trader = MarketMaker(
-            option_ids[0],
+            libs.option_ids[0],
             'NVDA'
             )
         trader.collect(exchange)
@@ -51,7 +33,7 @@ class TestMarketMaker(unittest.TestCase):
         
     def test_price(self):
         trader = MarketMaker(
-            stock_ids[0],
+            libs.stock_ids[0],
             'NVDA'
             )
         trader.collect(exchange)
@@ -61,7 +43,7 @@ class TestMarketMaker(unittest.TestCase):
         
     def test_lib_get_best_quotes(self):
         side = 'bid'
-        instrument = stock_ids[0]
+        instrument = libs.stock_ids[0]
         order_book = None
         # order_book = exchange.get_last_price_book(instrument)
         
@@ -87,7 +69,7 @@ class TestMarketMaker(unittest.TestCase):
         position = -100
         position_limit = 80
         theoretical_price = 32
-        order_book = exchange.get_last_price_book(stock_ids[0])
+        order_book = exchange.get_last_price_book(libs.stock_ids[0])
         best_quote = libs.get_best_quote(order_book, side)
         profitable, price, volume = _make_market_profitable(
                 theoretical_price,
