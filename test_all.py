@@ -1,4 +1,5 @@
 import unittest
+import libs
 from market_maker import MarketMaker
 from optibook.synchronous_client import Exchange
 
@@ -45,7 +46,7 @@ class TestMarketMaker(unittest.TestCase):
             'NVDA'
             )
         trader.collect(exchange)
-        print(trader.reference_prices)
+        print(trader.reference)
         
         
     def test_price(self):
@@ -56,4 +57,18 @@ class TestMarketMaker(unittest.TestCase):
         trader.collect(exchange)
         trader.price()
         print(trader.theoretical_prices)
+        
+        
+    # def test_lib_market_making_profitable(self):
+    #     stock_book = exchange.get_last_price_book('NVDA')
+    #     theoretical_price = stock_book.asks[0].price
+    #     print(f'NVDA: ask')
+    #     dual_book = exchange.get_last_price_book('NVDA_DUAL')
+    #     quote = dual_book if not dual_book else dual_book.asks[0].price
+    #     assert libs.market_making_profitable(
+    #         theoretical_price,
+    #         quote, 
+    #         'ask',
+    #         libs.TICK_SIZE
+    #         ) == True
         
