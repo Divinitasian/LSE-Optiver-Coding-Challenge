@@ -121,6 +121,12 @@ def check_and_get_best_bid_ask(exchange, stock_id):
         return False, None, None
     else:
         return True, stock_order_book.bids[0], stock_order_book.asks[0]
+        
+def retrieve_best_quotes(exchange, instrument_id):
+    while True:
+        exists, bid, ask = check_and_get_best_bid_ask(exchange, instrument_id)
+        if exists:
+            return bid, ask
 
 
 def expiry_in_years(exchange, instrument_id):

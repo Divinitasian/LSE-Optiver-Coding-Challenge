@@ -7,7 +7,7 @@ from optibook.common_types import InstrumentType, OptionKind
 
 from math import floor, ceil
 from black_scholes import call_value, put_value, call_delta, put_delta
-from libs import calculate_current_time_to_date, check_and_get_best_bid_ask
+from libs import calculate_current_time_to_date, retrieve_best_quotes
 from libs import round_down_to_tick, round_up_to_tick, clear_orders, clear_position
 from libs import POSITION_LIMIT, TICK_SIZE, MAX_BUYING_PRICE, MIN_SELLING_PRICE
 from libs import calculate_option_delta, calculate_theoretical_option_value
@@ -18,14 +18,13 @@ logging.getLogger('client').setLevel('ERROR')
 
 
 class MarketMaker:
-    def __init__(self, instrument_id, reference_id):
+    def __init__(self, instrument_id, reference_id, max_volume=80):
         self.instrument_id = instrument_id
         self.reference_id = reference_id
-        self.bid = None
-        self.ask = None
         self.sides = None
         self.reference_prices = None
         self.theoretical_prices = None
+        self.max_volume = max_volume
     
     def set_sides(self, direction):
         """
@@ -49,13 +48,7 @@ class MarketMaker:
         Argument:
             - exchange (optibook.Exchange): an exchange API client
         """
-        while True:
-            exists, bid, ask = check_and_get_best_bid_ask(
-                exchange, 
-                self.reference_id
-                )
-            if exists:
-                break
+        bid, ask = retrieve_best_quotes(exchange, self.reference_id)
         self.reference_prices = {
             'bid': bid.price,
             'ask': ask.price
@@ -71,5 +64,15 @@ class MarketMaker:
             'ask': self.reference_prices['ask']
         }
         
+    
+    # def make_market(self, exchange):
+    #     """
+    #     Provide or take liquidity from the current order book.
+    #     """
+    #     exchange.delete_orders(self.instrument_id)
+        
+        
+        
+            
         
     
