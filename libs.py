@@ -238,3 +238,25 @@ def show(response):
         print(f'>> Status: SUCCEED. Order ID: {response.order_id}.')
     else:
         print(f'>> Status: FAILURE. Reason: {response.error_reason}.')
+        
+
+def get_quotes(order_book, side):
+    if side == 'bid':
+        quotes = order_book.bids if order_book else None
+    else:
+        quotes = order_book.asks if order_book else None
+    return quotes
+    
+def get_best_quote(order_book, side):
+    quotes = get_quotes(order_book, side)
+    return quotes[0] if quotes else None
+        
+
+def get_valid_volume(volume, position, position_limit, side):
+    if side == 'bid':
+        max_volume_to_buy = position_limit - position
+        return min(volume, max_volume_to_buy)
+    else: 
+        max_volume_to_sell = position_limit + position
+        return min(volume, max_volume_to_sell)
+                

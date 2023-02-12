@@ -8,6 +8,28 @@ from optibook.synchronous_client import Exchange
 logging.getLogger('client').setLevel('ERROR')
 
 
+def _make_market_profitable(theoretical_price, best_quote, side, tick_size, credit):
+    if side == 'bid':
+        if best_quote is None:
+            price = theoretical_price + credit
+            volume = libs.POSITION_LIMIT * 2
+            profitable = True
+        else:
+            price = best_quote.price + tick_size
+            volume = best_quote.volume
+            profitable = theoretical_price > price
+    else:
+        if best_quote is None:
+            price = theoretical_price - credit
+            volume = libs.POSITION_LIMIT * 2
+            profitable = True        
+        else:
+            price = best_quote.price - tick_size
+            volume = best_quote.volume
+            profitable = theoretical_price < price
+    return profitable, price, volume
+    
+
 class MarketMaker:
     def __init__(self, instrument_id, reference_id, max_volume=80):
         self.instrument_id = instrument_id
@@ -55,15 +77,40 @@ class MarketMaker:
         self.theoretical_prices['bid'] = self.reference['bid'].price 
         self.theoretical_prices['ask'] = self.reference['ask'].price
     
-    
-    # def make_market(self, exchange):
-    #     """
-    #     Provide liquidity to the current order book when it is profitable.
-    #     """
-    #     exchange.delete_orders(self.instrument_id)
-        
-        
-        
+    def make_market(self, exchange, default_credit=0.03):
+        """
+        Provide liquidity to the current order book when it is profitable.
+        """
+        exchange.delete_orders(self.instrument_id)
+        order_book = exchange.get_last_price_book(self.instrument_id)
+        for side in self.sides:
+            best_quote = libs.get_best_quote(order_book, side)
+            profitable, price, volume = _make_market_profitable(
+                self.theoretical_prices[side],
+                best_quote,
+                side,
+                libs.TICK_SIZE,
+                default_credit
+                )
+            if profitable:
+                position = exchange.get_positions()[self.instrument_id]
+                volume = libs.get_valid_volume(
+                    volume,
+                    position,
+                    self.max_volume, 
+                    side
+                    )
+                if volume > 0:
+                    print(f'- Inserting {side} limit order in {self.instrument_id} for {volume} @ {price:8.2f}.')
+                    exchange.insert_order(
+                        instrument_id=self.instrument_id,
+                        price=price,
+                        volume=volume,
+                        side=side,
+                        order_type='limit',
+                    )
+
+
         
             
         
