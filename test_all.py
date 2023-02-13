@@ -1,6 +1,6 @@
 import unittest
 import libs
-from market_maker import MarketMaker, _make_market_profitable
+from market_maker import MarketMaker, _make_market_profitable, _detect
 from optibook.synchronous_client import Exchange
 
 exchange = Exchange()
@@ -87,3 +87,10 @@ class TestMarketMaker(unittest.TestCase):
         print(f"Is market making on {side} side profitable: {profitable}.")
         print(f"The new limit order to send is {volume}@{price}.")
         
+        
+    def test__detect(self):
+        side = 'ask'
+        credit = 0.1
+        theoretical_price = 5
+        best_quote_price = 4.9
+        assert _detect(best_quote_price, theoretical_price, credit, side) == 'take'

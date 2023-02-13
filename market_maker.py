@@ -29,6 +29,19 @@ def _make_market_profitable(theoretical_price, best_quote, side, tick_size, cred
             profitable = theoretical_price < price
     return profitable, price, volume
     
+    
+def _detect(best_quote_price, theoretical_price, credit, side):
+    buy_side_arbitragable = (side == 'bid') and (best_quote_price > theoretical_price)
+    sell_side_arbitragable = (side == 'ask') and (best_quote_price < theoretical_price)
+    buy_side_marketmakable = (side == 'bid') and (best_quote_price + libs.TICK_SIZE <= theoretical_price - credit)
+    sell_side_marketmakable = (side == 'ask') and (best_quote_price - libs.TICK_SIZE >= theoretical_price + credit)
+    if buy_side_arbitragable or sell_side_arbitragable:
+        return 'take'
+    elif buy_side_marketmakable or sell_side_marketmakable:
+        return 'make'
+    else:
+        return 'skip'
+    
 
 class MarketMaker:
     def __init__(self, instrument_id, reference_id, max_volume=80):
