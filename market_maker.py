@@ -152,20 +152,22 @@ def update_quotes(option_id, theoretical_bid, theoretical_ask, credit_bid, credi
         )
         
 
-def hedge_delta_position(stock_id, options, stock_value, credits, delta_limit, tick_size):
+def hedge_delta_position(options, stock_value, credits, delta_limit, tick_size):
     """
-    This function (once finished) hedges the outstanding delta position by trading in the stock.
+    This function hedges the outstanding delta position by adjusting the credits.
 
     That is:
         - It calculates how sensitive the total position value is to changes in the underlying by summing up all
           individual delta component.
-        - And then trades stocks which have the opposite exposure, to remain, roughly, flat delta exposure
+        - If the total delta exceeds the delta limit, adjusting the credits to strenghen the trades in the opposite
+          directions.
 
     Arguments:
-        stock_id: str         -  Exchange Instrument ID of the stock to hedge with
-        options: List[dict]   -  List of options with details to calculate and sum up delta positions for
-        stock_value: float    -  The stock value to assume when making delta calculations using Black-Scholes
+        options: List[dict]   -  List of options with details to calculate and sum up delta positions for.
+        stock_value: float    -  The stock value to assume when making delta calculations using Black-Scholes.
         credits: dict         -  Dictionary of options with credit for next round of trading.
+        delta_limit: float    -  [-delta_limit, delta_limit] is the safe range for trading.
+        tick_size: float      -  the movement unit for adjusting the credits.
     """
 
     # A2: Calculate the delta position here
@@ -176,31 +178,34 @@ def hedge_delta_position(stock_id, options, stock_value, credits, delta_limit, t
         print(f"- The current position in option {option_id} is {position}.")
         delta = calculate_option_delta(option.expiry, option.strike, option.option_kind, stock_value, 0.03, 3.0)
         tot += delta * position
-        
-    stock_position = positions[stock_id]
-    print(f'- The current position in the stock {stock_id} is {stock_position}.')
-
+    
+    
     # A3: Implement the delta hedge here, staying mindful of the overall position-limit of 100, also for the stocks.
     # print(f'- Delta hedge not implemented. Doing nothing.')
-    print(f'\nUpdating the credits used in the next round.')
-    for option_id in credits:
-        for side in ['bid', 'ask']:
-            if tot > delta_limit:
+    if tot > delta_limit:
+        print(f'\nHedging delta position: current delta is too HIGH.')
+        for option_id in credits:
+            for side in ['bid', 'ask']:
                 if option_id[-1] == 'C':
                     action = tick_size if side == 'bid' else - tick_size
                 elif option_id[-1] == 'P':
                     action = -tick_size if side == 'bid' else tick_size
-            elif tot < - delta_limit:
+                print(f"- The {side} credit of {option_id}: {action:8.2f}.")
+                credits[option_id][side] = max(0, credits[option_id][side] + action)
+                
+    elif tot < - delta_limit:
+        print(f'\nHedging delta position: current delta is too LOW.')
+        for option_id in credits:
+            for side in ['bid', 'ask']:
                 if option_id[-1] == 'C':
                     action = -tick_size if side == 'bid' else tick_size
                 elif option_id[-1] == 'P':
                     action = tick_size if side == 'bid' else -tick_size
-            else:
-                action = 0
-            
-            if action != 0:
                 print(f"- The {side} credit of {option_id}: {action:8.2f}.")
                 credits[option_id][side] = max(0, credits[option_id][side] + action)
+    else:
+        print(f'\nDelta position is in safe area.')
+                
     
 
 def load_instruments_for_underlying(underlying_stock_id):
@@ -233,9 +238,8 @@ stock, options = load_instruments_for_underlying(STOCK_ID)
 
 wait_time = 1
 
-credits = initialize_credits(options, 0.04)
+credits = initialize_credits(options, 0.01)
 
-t = 1
 while True:
     print(f'')
     print(f'-----------------------------------------------------------------')
@@ -285,12 +289,6 @@ while True:
         # Wait 1/5th of a second to avoid breaching the exchange frequency limit
         time.sleep(0.20)
         
-    if t%100 == 0:
-        print(f'\nHedging delta position')
-        hedge_delta_position(STOCK_ID, options, (stock_bid+stock_ask)/2, credits, delta_limit=200, tick_size=0.10)
-
-    
+    # hedge_delta_position(options, (stock_bid+stock_ask)/2, credits, delta_limit=200, tick_size=0.10)
     print(f'\nSleeping for {wait_time} seconds.')
     time.sleep(wait_time)
-    
-    t += 1
