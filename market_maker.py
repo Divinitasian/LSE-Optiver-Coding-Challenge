@@ -238,7 +238,7 @@ stock, options = load_instruments_for_underlying(STOCK_ID)
 
 wait_time = 1
 
-credits = initialize_credits(options, 0.01)
+credits = initialize_credits(options, 0.03)
 
 while True:
     print(f'')
