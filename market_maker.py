@@ -10,12 +10,6 @@ from black_scholes import call_value, put_value, call_delta, put_delta
 from libs import calculate_current_time_to_date, clear_position, clear_orders
 from libs import POSITION_LIMIT, MAX_BUYING_PRICE, MIN_SELLING_PRICE, TICK_SIZE
 
-exchange = Exchange()
-exchange.connect()
-
-logging.getLogger('client').setLevel('ERROR')
-
-
 def round_down_to_tick(price, tick_size):
     """
     Rounds a price down to the nearest tick, e.g. if the tick size is 0.10, a price of 0.97 will get rounded to 0.90.
@@ -152,6 +146,28 @@ def update_quotes(option_id, theoretical_bid, theoretical_ask, credit_bid, credi
         )
         
 
+def best_quote_credit_assigning(best_quote_price, theoretical_price, default_credit, side, tick_size):
+    """
+    This function computes the credit for a new limit order to replace the current best quote.
+    
+    That is:
+        - compute the credit of the best quote
+        - whenever there is room for shorten the bid-ask spread, then do it
+    """
+    if side == 'bid':
+        credit_best_quote = theoretical_price - best_quote_price
+    else:
+        credit_best_quote = best_quote_price - theoretical_price
+        
+    if credit_best_quote > tick_size:
+        new_credit = credit_best_quote - tick_size
+    elif credit_best_quote >= 0:
+        new_credit = credit_best_quote
+    else:
+        new_credit = default_credit
+    return new_credit
+   
+   
 def hedge_delta_position(options, stock_value, credits, delta_limit, tick_size):
     """
     This function hedges the outstanding delta position by adjusting the credits.
@@ -180,31 +196,31 @@ def hedge_delta_position(options, stock_value, credits, delta_limit, tick_size):
         tot += delta * position
     
     
-    # A3: Implement the delta hedge here, staying mindful of the overall position-limit of 100, also for the stocks.
-    # print(f'- Delta hedge not implemented. Doing nothing.')
-    if tot > delta_limit:
-        print(f'\nHedging delta position: current delta is too HIGH.')
-        for option_id in credits:
-            for side in ['bid', 'ask']:
-                if option_id[-1] == 'C':
-                    action = tick_size if side == 'bid' else - tick_size
-                elif option_id[-1] == 'P':
-                    action = -tick_size if side == 'bid' else tick_size
-                print(f"- The {side} credit of {option_id}: {action:8.2f}.")
-                credits[option_id][side] = max(0, credits[option_id][side] + action)
+    # # A3: Implement the delta hedge here, staying mindful of the overall position-limit of 100, also for the stocks.
+    # # print(f'- Delta hedge not implemented. Doing nothing.')
+    # if tot > delta_limit:
+    #     print(f'\nHedging delta position: current delta is too HIGH.')
+    #     for option_id in credits:
+    #         for side in ['bid', 'ask']:
+    #             if option_id[-1] == 'C':
+    #                 action = tick_size if side == 'bid' else - tick_size
+    #             elif option_id[-1] == 'P':
+    #                 action = -tick_size if side == 'bid' else tick_size
+    #             print(f"- The {side} credit of {option_id}: {action:8.2f}.")
+    #             credits[option_id][side] = max(0, credits[option_id][side] + action)
                 
-    elif tot < - delta_limit:
-        print(f'\nHedging delta position: current delta is too LOW.')
-        for option_id in credits:
-            for side in ['bid', 'ask']:
-                if option_id[-1] == 'C':
-                    action = -tick_size if side == 'bid' else tick_size
-                elif option_id[-1] == 'P':
-                    action = tick_size if side == 'bid' else -tick_size
-                print(f"- The {side} credit of {option_id}: {action:8.2f}.")
-                credits[option_id][side] = max(0, credits[option_id][side] + action)
-    else:
-        print(f'\nDelta position is in safe area.')
+    # elif tot < - delta_limit:
+    #     print(f'\nHedging delta position: current delta is too LOW.')
+    #     for option_id in credits:
+    #         for side in ['bid', 'ask']:
+    #             if option_id[-1] == 'C':
+    #                 action = -tick_size if side == 'bid' else tick_size
+    #             elif option_id[-1] == 'P':
+    #                 action = tick_size if side == 'bid' else -tick_size
+    #             print(f"- The {side} credit of {option_id}: {action:8.2f}.")
+    #             credits[option_id][side] = max(0, credits[option_id][side] + action)
+    # else:
+    #     print(f'\nDelta position is in safe area.')
                 
     
 
@@ -228,67 +244,80 @@ def initialize_credits(options, credit):
         }
     return credits
 
-
-# Load all instruments for use in the algorithm
-clear_position(exchange)
-clear_orders(exchange)
-
-STOCK_ID = 'NVDA'
-stock, options = load_instruments_for_underlying(STOCK_ID)
-
-wait_time = 1
-
-credits = initialize_credits(options, 0.03)
-
-while True:
-    print(f'')
-    print(f'-----------------------------------------------------------------')
-    print(f'TRADE LOOP ITERATION ENTERED AT {str(dt.datetime.now()):18s} UTC.')
-    print(f'-----------------------------------------------------------------')
-
-    stock_value = get_bid_ask(STOCK_ID)
-    if stock_value is None:
-        print('Empty stock order book on bid or ask-side, or both, unable to update option prices.')
+if __name__ == '__main__':
+    exchange = Exchange()
+    exchange.connect()
+    
+    logging.getLogger('client').setLevel('ERROR')
+    
+    # Load all instruments for use in the algorithm
+    clear_position(exchange)
+    clear_orders(exchange)
+    
+    STOCK_ID = 'NVDA'
+    stock, options = load_instruments_for_underlying(STOCK_ID)
+    
+    wait_time = 1
+    
+    default_credit = 0.03
+    
+    while True:
+        print(f'')
+        print(f'-----------------------------------------------------------------')
+        print(f'TRADE LOOP ITERATION ENTERED AT {str(dt.datetime.now()):18s} UTC.')
+        print(f'-----------------------------------------------------------------')
+    
+        stock_value = get_bid_ask(STOCK_ID)
+        if stock_value is None:
+            print('Empty stock order book on bid or ask-side, or both, unable to update option prices.')
+            time.sleep(wait_time)
+            continue
+    
+        stock_bid, stock_ask = stock_value
+        for option_id, option in options.items():
+            print(f"\nUpdating instrument {option_id}")
+    
+            theoretical_value_1 = calculate_theoretical_option_value(expiry=option.expiry,
+                                                                   strike=option.strike,
+                                                                   option_kind=option.option_kind,
+                                                                   stock_value=stock_bid,
+                                                                   interest_rate=0.03,
+                                                                   volatility=3.0)
+            
+            theoretical_value_2 = calculate_theoretical_option_value(expiry=option.expiry,
+                                                                   strike=option.strike,
+                                                                   option_kind=option.option_kind,
+                                                                   stock_value=stock_ask,
+                                                                   interest_rate=0.03,
+                                                                   volatility=3.0)
+            
+            theoretical_bid = min(theoretical_value_1, theoretical_value_2)
+            theoretical_ask = max(theoretical_value_1, theoretical_value_2)
+    
+            # A1: Here we ask a fixed credit of 15cts, regardless of what the market circumstances are or which option
+            #  we're quoting. That can be improved. Can you think of something better?
+            option_book = get_bid_ask(option_id)
+            if not option_book:
+                new_credit_bid = default_credit
+                new_credit_ask = default_credit
+            else:
+                option_best_bid, option_best_ask = option_book
+                new_credit_bid = best_quote_credit_assigning(option_best_bid, theoretical_bid, default_credit, 'bid', TICK_SIZE)
+                new_credit_ask = best_quote_credit_assigning(option_best_ask, theoretical_ask, default_credit, 'ask', TICK_SIZE)
+            # A4: Here we are inserting a volume of 3, only taking into account the position limit of 100 if we reach
+            #  it, are there better choices?
+            update_quotes(option_id=option_id,
+                          theoretical_bid=theoretical_bid,
+                          theoretical_ask=theoretical_ask,
+                          credit_bid=new_credit_bid,
+                          credit_ask=new_credit_ask,
+                          volume=100,
+                          position_limit=100,
+                          tick_size=0.10)
+    
+            # Wait 1/5th of a second to avoid breaching the exchange frequency limit
+            time.sleep(0.20)
+            
+        # hedge_delta_position(options, (stock_bid+stock_ask)/2, credits, delta_limit=200, tick_size=0.10)
+        print(f'\nSleeping for {wait_time} seconds.')
         time.sleep(wait_time)
-        continue
-
-    stock_bid, stock_ask = stock_value
-    for option_id, option in options.items():
-        print(f"\nUpdating instrument {option_id}")
-
-        theoretical_value_1 = calculate_theoretical_option_value(expiry=option.expiry,
-                                                               strike=option.strike,
-                                                               option_kind=option.option_kind,
-                                                               stock_value=stock_bid,
-                                                               interest_rate=0.03,
-                                                               volatility=3.0)
-        
-        theoretical_value_2 = calculate_theoretical_option_value(expiry=option.expiry,
-                                                               strike=option.strike,
-                                                               option_kind=option.option_kind,
-                                                               stock_value=stock_ask,
-                                                               interest_rate=0.03,
-                                                               volatility=3.0)
-        
-        theoretical_bid = min(theoretical_value_1, theoretical_value_2)
-        theoretical_ask = max(theoretical_value_1, theoretical_value_2)
-
-        # A1: Here we ask a fixed credit of 15cts, regardless of what the market circumstances are or which option
-        #  we're quoting. That can be improved. Can you think of something better?
-        # A4: Here we are inserting a volume of 3, only taking into account the position limit of 100 if we reach
-        #  it, are there better choices?
-        update_quotes(option_id=option_id,
-                      theoretical_bid=theoretical_bid,
-                      theoretical_ask=theoretical_ask,
-                      credit_bid=credits[option_id]['bid'],
-                      credit_ask=credits[option_id]['ask'],
-                      volume=100,
-                      position_limit=100,
-                      tick_size=0.10)
-
-        # Wait 1/5th of a second to avoid breaching the exchange frequency limit
-        time.sleep(0.20)
-        
-    # hedge_delta_position(options, (stock_bid+stock_ask)/2, credits, delta_limit=200, tick_size=0.10)
-    print(f'\nSleeping for {wait_time} seconds.')
-    time.sleep(wait_time)
