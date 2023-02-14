@@ -7,7 +7,8 @@ from optibook.common_types import InstrumentType, OptionKind
 
 from math import floor, ceil
 from black_scholes import call_value, put_value, call_delta, put_delta
-from libs import calculate_current_time_to_date
+from libs import calculate_current_time_to_date, clear_position, clear_orders
+from libs import POSITION_LIMIT, MAX_BUYING_PRICE, MIN_SELLING_PRICE 
 
 exchange = Exchange()
 exchange.connect()
@@ -29,7 +30,7 @@ def round_up_to_tick(price, tick_size):
     return ceil(price / tick_size) * tick_size
 
 
-def get_midpoint_value(instrument_id):
+def get_bid_ask(instrument_id):
     """
     This function calculates the current midpoint of the order book supplied by the exchange for the instrument
     specified by <instrument_id>, returning None if either side or both sides do not have any orders available.
@@ -40,8 +41,7 @@ def get_midpoint_value(instrument_id):
     if not (order_book and order_book.bids and order_book.asks):
         return None
     else:
-        midpoint = (order_book.bids[0].price + order_book.asks[0].price) / 2.0
-        return midpoint
+        return order_book.bids[0].price, order_book.asks[0].price
 
 
 def calculate_theoretical_option_value(expiry, strike, option_kind, stock_value, interest_rate, volatility):
@@ -88,7 +88,7 @@ def calculate_option_delta(expiry_date, strike, option_kind, stock_value, intere
     return option_delta
 
 
-def update_quotes(option_id, theoretical_price, credit, volume, position_limit, tick_size):
+def update_quotes(option_id, theoretical_bid, theoretical_ask, credit, volume, position_limit, tick_size):
     """
     This function updates the quotes specified by <option_id>. We take the following actions in sequence:
         - pull (remove) any current oustanding orders
@@ -98,7 +98,8 @@ def update_quotes(option_id, theoretical_price, credit, volume, position_limit, 
 
     Arguments:
         option_id: str           -  Exchange Instrument ID of the option to trade
-        theoretical_price: float -  Price to quote around
+        theoretical_bid: float   -  Price to bid around
+        theoretical_ask: float   -  Price to ask around
         credit: float            -  Difference to subtract from/add to theoretical price to come to final bid/ask price
         volume:                  -  Volume (# lots) of the inserted orders (given they do not breach position limits)
         position_limit: int      -  Position limit (long/short) to avoid crossing
@@ -117,8 +118,8 @@ def update_quotes(option_id, theoretical_price, credit, volume, position_limit, 
         exchange.delete_order(instrument_id=option_id, order_id=order_id)
 
     # Calculate bid and ask price
-    bid_price = round_down_to_tick(theoretical_price - credit, tick_size)
-    ask_price = round_up_to_tick(theoretical_price + credit, tick_size)
+    bid_price = round_down_to_tick(theoretical_bid - credit, tick_size)
+    ask_price = round_up_to_tick(theoretical_ask + credit, tick_size)
 
     # Calculate bid and ask volumes, taking into account the provided position_limit
     position = exchange.get_positions()[option_id]
@@ -148,7 +149,7 @@ def update_quotes(option_id, theoretical_price, credit, volume, position_limit, 
             side='ask',
             order_type='limit',
         )
-
+        
 
 def hedge_delta_position(stock_id, options, stock_value):
     """
@@ -167,16 +168,38 @@ def hedge_delta_position(stock_id, options, stock_value):
 
     # A2: Calculate the delta position here
     positions = exchange.get_positions()
-
+    tot = 0
     for option_id, option in options.items():
         position = positions[option_id]
         print(f"- The current position in option {option_id} is {position}.")
-
+        delta = calculate_option_delta(option.expiry, option.strike, option.option_kind, stock_value, 0.03, 3.0)
+        tot += delta * position
+        
     stock_position = positions[stock_id]
     print(f'- The current position in the stock {stock_id} is {stock_position}.')
 
     # A3: Implement the delta hedge here, staying mindful of the overall position-limit of 100, also for the stocks.
-    print(f'- Delta hedge not implemented. Doing nothing.')
+    # print(f'- Delta hedge not implemented. Doing nothing.')
+    desired_stock_position = max(min(-tot, POSITION_LIMIT), -POSITION_LIMIT)
+    diff = desired_stock_position - stock_position
+    if diff >= 1 :
+        side, price = 'bid', MAX_BUYING_PRICE
+        volume = diff
+    elif diff <= -1:
+        side, price = 'ask', MIN_SELLING_PRICE
+        volume = -diff
+    else:
+        print(f'- Skipping...')
+        return
+    volume = int(volume)
+    print(f'\n- Inserting {side} market order in {stock_id} for {volume} @ {price:.2f}.')
+    exchange.insert_order(
+            instrument_id=stock_id,
+            price=price,
+            volume=volume,
+            side=side,
+            order_type='ioc',            
+        )
 
 
 def load_instruments_for_underlying(underlying_stock_id):
@@ -190,8 +213,13 @@ def load_instruments_for_underlying(underlying_stock_id):
 
 
 # Load all instruments for use in the algorithm
+clear_position(exchange)
+clear_orders(exchange)
+
 STOCK_ID = 'NVDA'
 stock, options = load_instruments_for_underlying(STOCK_ID)
+
+wait_time = 1
 
 while True:
     print(f'')
@@ -199,30 +227,43 @@ while True:
     print(f'TRADE LOOP ITERATION ENTERED AT {str(dt.datetime.now()):18s} UTC.')
     print(f'-----------------------------------------------------------------')
 
-    stock_value = get_midpoint_value(STOCK_ID)
+    stock_value = get_bid_ask(STOCK_ID)
     if stock_value is None:
         print('Empty stock order book on bid or ask-side, or both, unable to update option prices.')
-        time.sleep(4)
+        time.sleep(wait_time)
         continue
 
+    stock_bid, stock_ask = stock_value
     for option_id, option in options.items():
         print(f"\nUpdating instrument {option_id}")
 
-        theoretical_value = calculate_theoretical_option_value(expiry=option.expiry,
+        theoretical_value_1 = calculate_theoretical_option_value(expiry=option.expiry,
                                                                strike=option.strike,
                                                                option_kind=option.option_kind,
-                                                               stock_value=stock_value,
+                                                               stock_value=stock_bid,
                                                                interest_rate=0.03,
                                                                volatility=3.0)
+        
+        theoretical_value_2 = calculate_theoretical_option_value(expiry=option.expiry,
+                                                               strike=option.strike,
+                                                               option_kind=option.option_kind,
+                                                               stock_value=stock_ask,
+                                                               interest_rate=0.03,
+                                                               volatility=3.0)
+        
+        theoretical_bid = min(theoretical_value_1, theoretical_value_2)
+        theoretical_ask = max(theoretical_value_1, theoretical_value_2)
 
         # A1: Here we ask a fixed credit of 15cts, regardless of what the market circumstances are or which option
         #  we're quoting. That can be improved. Can you think of something better?
+        
         # A4: Here we are inserting a volume of 3, only taking into account the position limit of 100 if we reach
         #  it, are there better choices?
         update_quotes(option_id=option_id,
-                      theoretical_price=theoretical_value,
-                      credit=0.15,
-                      volume=3,
+                      theoretical_bid=theoretical_bid,
+                      theoretical_ask=theoretical_ask,
+                      credit=0.04,
+                      volume=100,
                       position_limit=100,
                       tick_size=0.10)
 
@@ -230,7 +271,8 @@ while True:
         time.sleep(0.20)
 
     print(f'\nHedging delta position')
-    hedge_delta_position(STOCK_ID, options, stock_value)
+    hedge_delta_position(STOCK_ID, options, (stock_bid+stock_ask)/2)
 
-    print(f'\nSleeping for 4 seconds.')
-    time.sleep(4)
+    
+    print(f'\nSleeping for {wait_time} seconds.')
+    time.sleep(wait_time)
