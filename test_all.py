@@ -2,6 +2,7 @@ import unittest
 import libs
 from marketmaking import best_quote_credit_assigning
 from optibook.synchronous_client import Exchange
+from market_maker import OptionMarketMaker
 
 exchange = Exchange()
 exchange.connect()
@@ -22,7 +23,9 @@ class TestMarketMaker:
             tick_size
             ) == 0.03
         
-        
-        
-        
-        
+    def test_OptionMarketMaker_init_(self):
+        option_id = libs.option_ids[0]
+        option = exchange.get_instruments()[option_id]
+        omm = OptionMarketMaker(option)
+        print(omm.primal.instrument_id)
+        print(omm.primal.base_instrument_id)
