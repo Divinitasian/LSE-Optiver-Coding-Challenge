@@ -1,6 +1,6 @@
 import unittest
 import libs
-from market_maker import best_quote_credit_assigning
+from marketmaking import best_quote_credit_assigning
 from optibook.synchronous_client import Exchange
 
 exchange = Exchange()
