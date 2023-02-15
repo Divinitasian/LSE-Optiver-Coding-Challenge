@@ -51,3 +51,9 @@ class OptionMarketMaker:
         return credit_bid, credit_ask
     
     
+    def select_volumes(self, default):
+        volume_bid = default
+        volume_ask = default
+        return volume_bid, volume_ask
+        
+        
