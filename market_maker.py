@@ -27,3 +27,19 @@ class OptionMarketMaker:
             option_value = put_value(S=stock_value, K=strike, T=time_to_expiry, r=interest_rate, sigma=volatility)
             
         return option_value
+        
+        
+    def _compute_fair_quotes(self, stock_bid_price, stock_ask_price, interest_rate, volatility):
+        theoretical_value_1 = self._calculate_theoretical_option_value(
+            stock_bid_price, 
+            interest_rate, 
+            volatility
+            )
+        theoretical_value_2 = self._calculate_theoretical_option_value(
+            stock_ask_price, 
+            interest_rate, 
+            volatility
+            )
+        theoretical_bid_price = min(theoretical_value_1, theoretical_value_2)
+        theoretical_ask_price = max(theoretical_value_1, theoretical_value_2)
+        return theoretical_bid_price, theoretical_ask_price
