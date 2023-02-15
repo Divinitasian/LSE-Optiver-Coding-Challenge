@@ -29,7 +29,7 @@ class OptionMarketMaker:
         return option_value
         
         
-    def _compute_fair_quotes(self, stock_bid_price, stock_ask_price, interest_rate, volatility):
+    def compute_fair_quotes(self, stock_bid_price, stock_ask_price, interest_rate, volatility):
         theoretical_value_1 = self._calculate_theoretical_option_value(
             stock_bid_price, 
             interest_rate, 
@@ -43,3 +43,11 @@ class OptionMarketMaker:
         theoretical_bid_price = min(theoretical_value_1, theoretical_value_2)
         theoretical_ask_price = max(theoretical_value_1, theoretical_value_2)
         return theoretical_bid_price, theoretical_ask_price
+        
+        
+    def select_credits(self, default):
+        credit_bid = default
+        credit_ask = default
+        return credit_bid, credit_ask
+    
+    

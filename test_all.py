@@ -43,4 +43,4 @@ class TestMarketMaker:
         option_id = libs.option_ids[1]
         option = exchange.get_instruments()[option_id]
         omm = OptionMarketMaker(option)     
-        print(omm._compute_fair_quotes(25.1, 25.3, libs.INTEREST_RATE, libs.VOLATILITY))
+        print(omm.compute_fair_quotes(25.1, 25.3, libs.INTEREST_RATE, libs.VOLATILITY))
