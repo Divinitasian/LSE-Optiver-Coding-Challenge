@@ -165,18 +165,18 @@ def get_pair_option(option_id):
         return pair_option_id + 'C'
 
 
-# def black_scholes(spot, strike, r, expiry, vol, option_kind):
-#     c = vol * expiry**.5
-#     d1 = (math.log(spot/strike) + (r + vol**2/2)*expiry) / c
-#     d2 = d1 - c
-#     if option_kind == OptionKind.CALL:
-#         Nd1 = norm.cdf(d1)
-#         Nd2 = norm.cdf(d2)
-#         return float(Nd1*spot - Nd2*strike*math.exp(-r*expiry))
-#     else:
-#         N_d1 = norm.cdf(-d1)
-#         N_d2 = norm.cdf(-d2)
-#         return float(N_d2*strike*math.exp(-r*expiry) - N_d1*spot)
+def get_bid_ask(exchange, instrument_id):
+    """
+    This function calculates the current midpoint of the order book supplied by the exchange for the instrument
+    specified by <instrument_id>, returning None if either side or both sides do not have any orders available.
+    """
+    order_book = exchange.get_last_price_book(instrument_id=instrument_id)
+
+    # If the instrument doesn't have prices at all or on either side, we cannot calculate a midpoint and return None
+    if not (order_book and order_book.bids and order_book.asks):
+        return None
+    else:
+        return order_book.bids[0], order_book.asks[0]
 
 
 def round_down_to_tick(price, tick_size):

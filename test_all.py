@@ -35,12 +35,12 @@ class TestMarketMaker:
         option_id = libs.option_ids[0]
         option = exchange.get_instruments()[option_id]
         omm = OptionMarketMaker(option)
-        stock_value, interest_rate, volatility = 25.8, libs.INTEREST_RATE, libs.VOLATILITY
-        print(omm._calculate_theoretical_option_value(stock_value, interest_rate, volatility))
+        stock_value = 25.8
+        print(omm._calculate_theoretical_option_value(stock_value))
         
         
     def test_OptionMarketMaker__compute_fair_quotes(self):
         option_id = libs.option_ids[1]
         option = exchange.get_instruments()[option_id]
         omm = OptionMarketMaker(option)     
-        print(omm.compute_fair_quotes(25.1, 25.3, libs.INTEREST_RATE, libs.VOLATILITY))
+        print(omm.compute_fair_quotes(25.1, 25.3))
