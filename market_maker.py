@@ -11,10 +11,10 @@ from libs import INTEREST_RATE, VOLATILITY, POSITION_LIMIT, TICK_SIZE
 from optibook.synchronous_client import Exchange
 from optibook.common_types import OptionKind
 
+
 class OptionMarketMaker:
     def __init__(self, option):
         self.primal = option
-        self.dual_id = option.base_instrument_id
 
         self.interest_rate = INTEREST_RATE
         self.volatility = VOLATILITY
@@ -124,6 +124,7 @@ class OptionMarketMaker:
 if __name__ == "__main__":
     exchange = Exchange()
     exchange.connect()
+    stock_id ='NVDA'
     option_id = 'NVDA_202306_020C'
     option = exchange.get_instruments()[option_id]
     omm = OptionMarketMaker(option)
@@ -136,7 +137,7 @@ if __name__ == "__main__":
         print(f'TRADE LOOP ITERATION ENTERED AT {str(dt.datetime.now()):18s} UTC.')
         print(f'-----------------------------------------------------------------')
     
-        stock_value = get_bid_ask(exchange, omm.dual_id)
+        stock_value = get_bid_ask(exchange, stock_id)
         if stock_value is None:
             print('Empty stock order book on bid or ask-side, or both, unable to update option prices.')
             time.sleep(wait_time)
