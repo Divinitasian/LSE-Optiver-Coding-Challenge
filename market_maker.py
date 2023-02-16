@@ -21,8 +21,7 @@ class MarketMaker:
         self.position_limit = POSITION_LIMIT
         self.tick_size = TICK_SIZE
         
-        self.credit_bid = 0.03
-        self.credit_ask = 0.03
+        self.c0 = 0.03
 
         self.volume_bid = 80
         self.volume_ask = 80
@@ -88,7 +87,22 @@ class MarketMaker:
                 side='ask',
                 order_type='limit',
             )
-
+            
+            
+    def select_credits(self, exchange, ic_mode):
+        if ic_mode == 'constant':
+            self.credit_bid = self.c0
+            self.credit_ask = self.c0
+        elif ic_mode == 'rigid':
+            self.credit_bid = self.c0
+            self.credit_ask = self.c0
+            instrument_id = self.primal.instrument_id
+            position = exchange.get_positions()[instrument_id]
+            if position == self.position_limit:
+                self.credit_ask = 0
+            elif position == -self.position_limit:
+                self.credit_bid = 0
+                
 
 class StockMarketMaker(MarketMaker):
     def compute_fair_quotes(self, stock_bid_price, stock_ask_price):
@@ -138,8 +152,9 @@ class OptionMarketMaker(MarketMaker):
 if __name__ == "__main__":
     exchange = Exchange()
     exchange.connect()
-    market_maker = FutureMarketMaker(exchange.get_instruments()['NVDA_202309_F'])
+    market_maker = OptionMarketMaker(exchange.get_instruments()['NVDA_202306_050P'])
     
+    ic_mode = 'rigid'
     wait_time = 1
     
     while True:
@@ -158,6 +173,7 @@ if __name__ == "__main__":
     
         stock_bid, stock_ask = stock_value
         theoretical_bid_price, theoretical_ask_price = market_maker.compute_fair_quotes(stock_bid.price, stock_ask.price)
+        market_maker.select_credits(exchange, ic_mode)
         market_maker.update_limit_orders(exchange, theoretical_bid_price, theoretical_ask_price)
         
         print(f'\nSleeping for {wait_time} seconds.')
