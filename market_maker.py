@@ -102,6 +102,16 @@ class MarketMaker:
                 self.credit_ask = 0
             elif position == -self.position_limit:
                 self.credit_bid = 0
+        elif ic_mode == 'linear':
+            self.credit_bid = self.c0
+            self.credit_ask = self.c0
+            instrument_id = self.primal.instrument_id
+            position = exchange.get_positions()[instrument_id]
+            factor = 1 - abs(position) / self.position_limit
+            if position > 0:
+                self.credit_ask *= factor
+            elif position < 0:
+                self.credit_bid *= factor
         else:
             raise NotImplementedError(f"The {ic_mode} mode for inventory management has not been implemented.")
                 
