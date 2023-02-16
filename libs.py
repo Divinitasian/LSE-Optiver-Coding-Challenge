@@ -1,8 +1,9 @@
 import datetime as dt
-from scipy.stats import norm
 import time
 import random
 import math
+import logging
+from optibook.synchronous_client import Exchange
 from optibook.common_types import OptionKind
 from math import floor, ceil
 from black_scholes import call_value, put_value, call_delta, put_delta
@@ -279,3 +280,11 @@ def get_valid_volume(volume, position, position_limit, side):
         max_volume_to_sell = position_limit + position
         return min(volume, max_volume_to_sell)
                 
+                
+if __name__ == "__main__":
+    exchange = Exchange()
+    exchange.connect()
+
+    logging.getLogger('client').setLevel('ERROR')
+    clear_orders(exchange)
+    clear_position(exchange)
