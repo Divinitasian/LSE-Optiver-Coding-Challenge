@@ -90,6 +90,11 @@ class MarketMaker:
             )
 
 
+class StockMarketMaker(MarketMaker):
+    def compute_fair_quotes(self, stock_bid_price, stock_ask_price):
+        return stock_bid_price, stock_ask_price
+        
+
 class OptionMarketMaker(MarketMaker):
     def _calculate_theoretical_option_value(self, stock_value):
         """
@@ -126,7 +131,7 @@ class OptionMarketMaker(MarketMaker):
 if __name__ == "__main__":
     exchange = Exchange()
     exchange.connect()
-    market_maker = OptionMarketMaker(exchange.get_instruments()['NVDA_202306_020P'])
+    market_maker = StockMarketMaker(exchange.get_instruments()['NVDA_DUAL'])
     
     wait_time = 1
     
