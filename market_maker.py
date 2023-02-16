@@ -1,5 +1,5 @@
 import datetime as dt
-import time
+import time, math
 import logging
 logging.getLogger('client').setLevel('ERROR')
 
@@ -94,6 +94,13 @@ class StockMarketMaker(MarketMaker):
     def compute_fair_quotes(self, stock_bid_price, stock_ask_price):
         return stock_bid_price, stock_ask_price
         
+        
+class FutureMarketMaker(MarketMaker):
+    def compute_fair_quotes(self, stock_bid_price, stock_ask_price):
+        tau = calculate_current_time_to_date(self.primal.expiry)
+        ratio = math.exp(self.interest_rate*tau)
+        return stock_bid_price * ratio, stock_ask_price * ratio
+        
 
 class OptionMarketMaker(MarketMaker):
     def _calculate_theoretical_option_value(self, stock_value):
@@ -131,7 +138,7 @@ class OptionMarketMaker(MarketMaker):
 if __name__ == "__main__":
     exchange = Exchange()
     exchange.connect()
-    market_maker = StockMarketMaker(exchange.get_instruments()['NVDA_DUAL'])
+    market_maker = FutureMarketMaker(exchange.get_instruments()['NVDA_202309_F'])
     
     wait_time = 1
     
