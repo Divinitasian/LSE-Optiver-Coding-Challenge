@@ -24,8 +24,8 @@ class MarketMaker:
         self.credit_bid = 0.03
         self.credit_ask = 0.03
 
-        self.volume_bid = 10
-        self.volume_ask = 10
+        self.volume_bid = 80
+        self.volume_ask = 80
         
         
     def get_traded_orders(self, exchange):
@@ -126,10 +126,7 @@ class OptionMarketMaker(MarketMaker):
 if __name__ == "__main__":
     exchange = Exchange()
     exchange.connect()
-    stock_id ='NVDA'
-    option_id = 'NVDA_202306_020C'
-    option = exchange.get_instruments()[option_id]
-    omm = OptionMarketMaker(option)
+    market_maker = OptionMarketMaker(exchange.get_instruments()['NVDA_202306_020P'])
     
     wait_time = 1
     
@@ -138,16 +135,18 @@ if __name__ == "__main__":
         print(f'-----------------------------------------------------------------')
         print(f'TRADE LOOP ITERATION ENTERED AT {str(dt.datetime.now()):18s} UTC.')
         print(f'-----------------------------------------------------------------')
+        
+        market_maker.get_traded_orders(exchange)
     
-        stock_value = get_bid_ask(exchange, stock_id)
+        stock_value = get_bid_ask(exchange, 'NVDA')
         if stock_value is None:
             print('Empty stock order book on bid or ask-side, or both, unable to update option prices.')
             time.sleep(wait_time)
             continue
     
         stock_bid, stock_ask = stock_value
-        theoretical_bid_price, theoretical_ask_price = omm.compute_fair_quotes(stock_bid.price, stock_ask.price)
-        omm.update_limit_orders(exchange, theoretical_bid_price, theoretical_ask_price)
+        theoretical_bid_price, theoretical_ask_price = market_maker.compute_fair_quotes(stock_bid.price, stock_ask.price)
+        market_maker.update_limit_orders(exchange, theoretical_bid_price, theoretical_ask_price)
         
         print(f'\nSleeping for {wait_time} seconds.')
         time.sleep(wait_time)
