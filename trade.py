@@ -46,6 +46,7 @@ if __name__ == "__main__":
     underlying_dict = underlying_hash(all_instruments)
     market_makers_dict = market_makers_hash(all_instruments, underlying_dict)
 
+    ic_mode = 'constant'
     wait_time = .2
     
     while True:
@@ -65,6 +66,7 @@ if __name__ == "__main__":
         
             stock_bid, stock_ask = stock_value
             theoretical_bid_price, theoretical_ask_price = market_maker.compute_fair_quotes(stock_bid.price, stock_ask.price)
+            market_maker.select_credits(exchange, ic_mode)
             market_maker.update_limit_orders(exchange, theoretical_bid_price, theoretical_ask_price)
             
             print(f'\nSleeping for {wait_time} seconds.')
