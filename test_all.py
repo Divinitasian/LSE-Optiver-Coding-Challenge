@@ -1,6 +1,7 @@
 import unittest
 import libs
 from marketmaking import best_quote_credit_assigning
+from trade import relationship, initialize
 from optibook.synchronous_client import Exchange
 from market_maker import OptionMarketMaker
 
@@ -44,3 +45,12 @@ class TestMarketMaker:
         option = exchange.get_instruments()[option_id]
         omm = OptionMarketMaker(option)     
         print(omm.compute_fair_quotes(25.1, 25.3))
+        
+    def test_trade_load(self):
+        underlying_dict = relationship(exchange)
+        assert underlying_dict['CSCO'] == 'CSCO'
+        print(underlying_dict)
+        
+        
+    def test_trade_init(self):
+        print(initialize(exchange))
