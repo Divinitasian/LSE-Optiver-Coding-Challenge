@@ -46,7 +46,7 @@ if __name__ == "__main__":
     underlying_dict = underlying_hash(all_instruments)
     market_makers_dict = market_makers_hash(all_instruments, underlying_dict)
 
-    ic_mode = 'constant'
+    ic_mode = 'rigid'
     wait_time = .2
     
     while True:

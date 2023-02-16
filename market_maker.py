@@ -102,6 +102,8 @@ class MarketMaker:
                 self.credit_ask = 0
             elif position == -self.position_limit:
                 self.credit_bid = 0
+        else:
+            raise NotImplementedError(f"The {ic_mode} mode for inventory management has not been implemented.")
                 
 
 class StockMarketMaker(MarketMaker):
