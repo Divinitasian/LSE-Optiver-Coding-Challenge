@@ -12,9 +12,9 @@ from optibook.synchronous_client import Exchange
 from optibook.common_types import OptionKind
 
 
-class OptionMarketMaker:
-    def __init__(self, option):
-        self.primal = option
+class MarketMaker:
+    def __init__(self, instrument):
+        self.primal = instrument
 
         self.interest_rate = INTEREST_RATE
         self.volatility = VOLATILITY
@@ -27,8 +27,8 @@ class OptionMarketMaker:
         self.volume_bid = 100
         self.volume_ask = 100
         
-        
-        
+
+class OptionMarketMaker(MarketMaker):
     def _calculate_theoretical_option_value(self, stock_value):
         """
         This function calculates the current fair call or put value based on Black & Scholes assumptions.
