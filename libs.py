@@ -279,6 +279,16 @@ def get_valid_volume(volume, position, position_limit, side):
     else: 
         max_volume_to_sell = position_limit + position
         return min(volume, max_volume_to_sell)
+        
+        
+def detect_arbitrage(best_bid_price, best_ask_price, theoretical_bid_price, theoretical_ask_price):
+    if best_bid_price > theoretical_ask_price:
+        primal_side = "ask"
+    elif best_ask_price < theoretical_bid_price:
+        primal_side = "bid"
+    else:
+        primal_side = None
+    return primal_side
                 
                 
 if __name__ == "__main__":

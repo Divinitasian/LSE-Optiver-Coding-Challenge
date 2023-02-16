@@ -58,3 +58,18 @@ class TestMarketMaker:
         underlying_dict = underlying_hash(all_instruments)
         market_makers_dict = market_makers_hash(all_instruments, underlying_dict)
         print(market_makers_dict)
+        
+        
+    def test_libs_detect(self):
+        best_bid_price = .1
+        best_ask_price = .2
+        theoretical_bid_price = .05
+        theoretical_ask_price = .09
+        assert libs.detect_arbitrage(best_bid_price, best_ask_price, theoretical_bid_price, theoretical_ask_price) == 'ask'
+        
+        best_bid_price = .1
+        best_ask_price = .2
+        theoretical_bid_price = .3
+        theoretical_ask_price = .4
+        assert libs.detect_arbitrage(best_bid_price, best_ask_price, theoretical_bid_price, theoretical_ask_price) == 'bid'
+        
