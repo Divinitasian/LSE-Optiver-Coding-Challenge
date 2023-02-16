@@ -10,8 +10,7 @@ from optibook.common_types import InstrumentType, OptionKind
 from market_maker import OptionMarketMaker, FutureMarketMaker, StockMarketMaker
 
 
-def relationship(exchange):
-    all_instruments = exchange.get_instruments()
+def underlying_hash(all_instruments):
     underlying_dict = {}
     for instrument_id, instrument in all_instruments.items():
         if instrument.base_instrument_id is not None:
@@ -23,10 +22,7 @@ def relationship(exchange):
     return underlying_dict
     
     
-def initialize(exchange):
-    all_instruments_underlying_ids = relationship(exchange)
-    all_instruments = exchange.get_instruments()
-    
+def market_makers_hash(all_instruments, all_instruments_underlying_ids):
     all_market_makers = {}
     for instrument_id, underlying_id in all_instruments_underlying_ids.items():
         if instrument_id[-1] == 'C' or instrument_id[-1] == 'P':
@@ -53,17 +49,19 @@ def initialize(exchange):
 #         print(f'-----------------------------------------------------------------')
         
 #         all_market_makers = initialize(exchange)
-#         market_maker.get_traded_orders(exchange)
-    
-#         stock_value = get_bid_ask(exchange, 'NVDA')
-#         if stock_value is None:
-#             print('Empty stock order book on bid or ask-side, or both, unable to update option prices.')
-#             time.sleep(wait_time)
-#             continue
-    
-#         stock_bid, stock_ask = stock_value
-#         theoretical_bid_price, theoretical_ask_price = market_maker.compute_fair_quotes(stock_bid.price, stock_ask.price)
-#         market_maker.update_limit_orders(exchange, theoretical_bid_price, theoretical_ask_price)
         
-#         print(f'\nSleeping for {wait_time} seconds.')
-#         time.sleep(wait_time)
+#         for instrument_id, market_maker in all_market_makers.items():
+#             market_maker.get_traded_orders(exchange)
+        
+#             stock_value = get_bid_ask(exchange, 'NVDA')
+#             if stock_value is None:
+#                 print('Empty stock order book on bid or ask-side, or both, unable to update option prices.')
+#                 time.sleep(wait_time)
+#                 continue
+        
+#             stock_bid, stock_ask = stock_value
+#             theoretical_bid_price, theoretical_ask_price = market_maker.compute_fair_quotes(stock_bid.price, stock_ask.price)
+#             market_maker.update_limit_orders(exchange, theoretical_bid_price, theoretical_ask_price)
+            
+#             print(f'\nSleeping for {wait_time} seconds.')
+#             time.sleep(wait_time)
