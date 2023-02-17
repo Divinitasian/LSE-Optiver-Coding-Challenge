@@ -46,8 +46,9 @@ if __name__ == "__main__":
     underlying_dict = underlying_hash(all_instruments)
     market_makers_dict = market_makers_hash(all_instruments, underlying_dict)
 
-    ic_mode = 'linear'
-    wait_time = .1
+    credit_ic_mode = 'linear'
+    volume_ic_mode = 'linear'
+    wait_time = .2
     
     while True:
         print(f'')
@@ -66,7 +67,8 @@ if __name__ == "__main__":
         
             stock_bid, stock_ask = stock_value
             theoretical_bid_price, theoretical_ask_price = market_maker.compute_fair_quotes(stock_bid.price, stock_ask.price)
-            market_maker.select_credits(exchange, ic_mode)
+            market_maker.select_credits(exchange, credit_ic_mode)
+            market_maker.select_volumes(exchange, volume_ic_mode)
             market_maker.cancel_orders(exchange)
             market_maker.update_limit_orders(exchange, theoretical_bid_price, theoretical_ask_price)
             
