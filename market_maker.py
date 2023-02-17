@@ -34,12 +34,21 @@ class MarketMaker:
         trades = exchange.poll_new_trades(instrument_id=self.primal.instrument_id)
         for trade in trades:
             print(f'- Last period, traded {trade.volume} lots in {self.primal.instrument_id} at price {trade.price:.2f}, side {trade.side}.')
-
+            
+            
+    def cancel_orders(self, exchange):
+        """
+        Remove any current oustanding orders
+        """
+        orders = exchange.get_outstanding_orders(instrument_id=self.primal.instrument_id)
+        for order_id, order in orders.items():
+            print(f'- Deleting old {order.side} order in {self.primal.instrument_id} for {order.volume} @ {order.price:8.2f}.')
+            exchange.delete_order(instrument_id=self.primal.instrument_id, order_id=order_id)
+    
 
     def update_limit_orders(self, exchange, theoretical_bid_price, theoretical_ask_price):
         """
         This function updates the quotes specified by instrument id. We take the following actions in sequence:
-            - pull (remove) any current oustanding orders
             - add credit to theoretical price and round to nearest tick size to create a set of bid/ask quotes
             - calculate max volumes to insert as to not pass the position_limit
             - reinsert limit orders on those levels
@@ -49,12 +58,6 @@ class MarketMaker:
             theoretical_bid_price: float   -  Price to bid around
             theoretical_ask_price: float   -  Price to ask around
         """
-        # Pull (remove) all existing outstanding orders
-        orders = exchange.get_outstanding_orders(instrument_id=self.primal.instrument_id)
-        for order_id, order in orders.items():
-            print(f'- Deleting old {order.side} order in {self.primal.instrument_id} for {order.volume} @ {order.price:8.2f}.')
-            exchange.delete_order(instrument_id=self.primal.instrument_id, order_id=order_id)
-    
         # Calculate bid and ask price
         bid_price = round_down_to_tick(theoretical_bid_price - self.credit_bid, self.tick_size)
         ask_price = round_up_to_tick(theoretical_ask_price + self.credit_ask, self.tick_size)
@@ -186,6 +189,7 @@ if __name__ == "__main__":
         stock_bid, stock_ask = stock_value
         theoretical_bid_price, theoretical_ask_price = market_maker.compute_fair_quotes(stock_bid.price, stock_ask.price)
         market_maker.select_credits(exchange, ic_mode)
+        market_maker.cancel_orders(exchange)
         market_maker.update_limit_orders(exchange, theoretical_bid_price, theoretical_ask_price)
         
         print(f'\nSleeping for {wait_time} seconds.')
