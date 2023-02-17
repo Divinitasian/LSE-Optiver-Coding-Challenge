@@ -108,29 +108,41 @@ class MarketMaker:
             raise NotImplementedError(f"The volume {ic_mode} mode for inventory management has not been implemented.")
                 
                 
+    def _credit_constant(self):
+        self.credit_bid = self.c0
+        self.credit_ask = self.c0   
+        
+                
+    def _credit_linear_advocate(self, exchange):
+        self.credit_bid = self.c0
+        self.credit_ask = self.c0
+        instrument_id = self.primal.instrument_id
+        position = exchange.get_positions()[instrument_id]
+        factor = 1 - abs(position) / self.position_limit
+        if position > 0:
+            self.credit_ask *= factor
+        elif position < 0:
+            self.credit_bid *= factor
+            
+                
+    def _credit_rigid(self, exchange):
+        self.credit_bid = self.c0
+        self.credit_ask = self.c0
+        instrument_id = self.primal.instrument_id
+        position = exchange.get_positions()[instrument_id]
+        if position == self.position_limit:
+            self.credit_ask = 0
+        elif position == -self.position_limit:
+            self.credit_bid = 0        
+    
+                
     def select_credits(self, exchange, ic_mode):
         if ic_mode == 'constant':
-            self.credit_bid = self.c0
-            self.credit_ask = self.c0
+            self._credit_constant()
         elif ic_mode == 'rigid':
-            self.credit_bid = self.c0
-            self.credit_ask = self.c0
-            instrument_id = self.primal.instrument_id
-            position = exchange.get_positions()[instrument_id]
-            if position == self.position_limit:
-                self.credit_ask = 0
-            elif position == -self.position_limit:
-                self.credit_bid = 0
-        elif ic_mode == 'linear':
-            self.credit_bid = self.c0
-            self.credit_ask = self.c0
-            instrument_id = self.primal.instrument_id
-            position = exchange.get_positions()[instrument_id]
-            factor = 1 - abs(position) / self.position_limit
-            if position > 0:
-                self.credit_ask *= factor
-            elif position < 0:
-                self.credit_bid *= factor
+            self._credit_rigid(exchange)
+        elif ic_mode == 'linear-advocate':
+            self._credit_linear_advocate(exchange)
         else:
             raise NotImplementedError(f"The credit {ic_mode} mode for inventory management has not been implemented.")
                 
@@ -185,7 +197,7 @@ if __name__ == "__main__":
     exchange.connect()
     market_maker = OptionMarketMaker(exchange.get_instruments()['NVDA_202306_050P'])
     
-    credit_ic_mode = 'rigid'
+    credit_ic_mode = 'linear-advocate'
     volume_ic_mode = 'linear'
     wait_time = 1
     
