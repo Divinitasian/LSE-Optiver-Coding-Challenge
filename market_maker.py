@@ -90,20 +90,28 @@ class MarketMaker:
             )
             
     
+    def _volume_constant(self):
+        self.volume_bid = self.v0
+        self.volume_ask = self.v0        
+        
+        
+    def _volume_linear_deprecate(self, exchange):
+        self.volume_bid = self.v0
+        self.volume_ask = self.v0            
+        instrument_id = self.primal.instrument_id
+        position = exchange.get_positions()[instrument_id]
+        factor = 1 - abs(position) / self.position_limit
+        if position > 0:
+            self.volume_bid = int(self.volume_bid * factor)
+        elif position < 0:
+            self.volume_ask = int(self.volume_ask * factor)
+        
+    
     def select_volumes(self, exchange, ic_mode):
         if ic_mode == 'constant':
-            self.volume_bid = self.v0
-            self.volume_ask = self.v0
-        elif ic_mode == 'linear':
-            self.volume_bid = self.v0
-            self.volume_ask = self.v0            
-            instrument_id = self.primal.instrument_id
-            position = exchange.get_positions()[instrument_id]
-            factor = 1 - abs(position) / self.position_limit
-            if position > 0:
-                self.volume_bid = int(self.volume_bid * factor)
-            elif position < 0:
-                self.volume_ask = int(self.volume_ask * factor)
+            self._volume_constant()
+        elif ic_mode == 'linear-deprecate':
+            self._volume_linear_deprecate(exchange)
         else:
             raise NotImplementedError(f"The volume {ic_mode} mode for inventory management has not been implemented.")
                 
@@ -198,7 +206,7 @@ if __name__ == "__main__":
     market_maker = OptionMarketMaker(exchange.get_instruments()['NVDA_202306_050P'])
     
     credit_ic_mode = 'linear-advocate'
-    volume_ic_mode = 'linear'
+    volume_ic_mode = 'constant'
     wait_time = 1
     
     while True:
