@@ -13,7 +13,7 @@ from market_maker import OptionMarketMaker, FutureMarketMaker, StockMarketMaker
 from libs import get_bid_ask, clear_orders, clear_position
 from trade import underlying_hash
 
-project_name = 'Optiver-market-making-NVDA'
+project_name = 'Optiver-market-making'
 
 
 # 🐝 Step 1: Define the trade function that takes in hyperparameter 
@@ -131,10 +131,10 @@ sweep_configuration = {
         'goal': 'maximize',
         'name': 'PnL'
     },
-    # 'early_terminate': {
-    #     'type': 'hyperband',
-    #     'min_iter': 3
-    # },
+    'early_terminate': {
+        'type': 'hyperband',
+        'min_iter': 3
+    },
     'parameters': {
         'credit': {
             'max': 0.1, 
@@ -155,9 +155,7 @@ sweep_configuration = {
                 ]
         },
         'instrument_id': {
-            'values': [
-                'NVDA_202306_050P', 'NVDA_202306_F', 'NVDA_DUAL'
-                ]
+            'value': 'NVDA_202306_050C'
         },
         'wait_time': {'value': .2},
         'underlying_id': {'value': 'NVDA'},
@@ -175,4 +173,4 @@ sweep_configuration = {
 sweep_id = wandb.sweep(sweep=sweep_configuration, project=project_name)
 
 # 🐝 Step 4: Call to `wandb.agent` to start a sweep
-wandb.agent(sweep_id, function=main, count=150)
+wandb.agent(sweep_id, function=main, count=30)
