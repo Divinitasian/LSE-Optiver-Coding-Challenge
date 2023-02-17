@@ -4,6 +4,8 @@ from trade import underlying_hash, market_makers_hash
 from optibook.synchronous_client import Exchange
 from market_maker import OptionMarketMaker
 
+from hyperparameter import trade_one_iteration
+
 exchange = Exchange()
 exchange.connect()
 
@@ -58,3 +60,22 @@ class TestMarketMaker:
         theoretical_ask_price = .4
         assert libs.detect_arbitrage(best_bid_price, best_ask_price, theoretical_bid_price, theoretical_ask_price) == 'bid'
         
+        
+class TestHyperparameterSearch:
+    def test_trade_one_iteration(self):
+        iteration = 1
+        market_maker = OptionMarketMaker(exchange.get_instruments()['NVDA_202306_050P'])
+        underlying_id = 'NVDA'
+        wait_time = .2
+        credit_ic_mode = 'constant'
+        volume_ic_mode = 'linear-deprecate'
+        pnl = trade_one_iteration(
+            iteration, 
+            market_maker, 
+            exchange, 
+            underlying_id, 
+            wait_time, 
+            credit_ic_mode, 
+            volume_ic_mode
+            )
+        print(f'\n - The current PnL is {pnl}.')
