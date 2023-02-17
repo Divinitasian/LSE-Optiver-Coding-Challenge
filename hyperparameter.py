@@ -154,8 +154,12 @@ sweep_configuration = {
                 'constant', 'linear-advocate', 'linear-deprecate'
                 ]
         },
+        'instrument_id': {
+            'values': [
+                'NVDA_202306_050P', 'NVDA_202306_F', 'NVDA_DUAL'
+                ]
+        },
         'wait_time': {'value': .2},
-        'instrument_id': {'value': 'NVDA_202306_050P'},
         'underlying_id': {'value': 'NVDA'},
         'epochs': {'value': 1000},
         'ir': {'value': .03},
@@ -171,4 +175,4 @@ sweep_configuration = {
 sweep_id = wandb.sweep(sweep=sweep_configuration, project=project_name)
 
 # 🐝 Step 4: Call to `wandb.agent` to start a sweep
-wandb.agent(sweep_id, function=main, count=50)
+wandb.agent(sweep_id, function=main, count=150)
