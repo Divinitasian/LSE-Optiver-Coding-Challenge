@@ -12,7 +12,7 @@ from optibook.synchronous_client import Exchange
 from market_maker import OptionMarketMaker, FutureMarketMaker, StockMarketMaker
 from libs import get_bid_ask, clear_orders, clear_position
 
-project_name = 'Optiver-market-making-individual'
+project_name = 'Optiver-market-making'
 
 
 # 🐝 Step 1: Define the trade function that takes in hyperparameter 
@@ -154,11 +154,11 @@ sweep_configuration = {
                 ]
         },
         'instrument_id': {
-            'value': 'NVDA_202306_050C'
+            'value': 'NVDA_202306_030C'
         },
         'wait_time': {'value': .2},
         'underlying_id': {'value': 'NVDA'},
-        'epochs': {'value': 1000},
+        'epochs': {'value': 2000},
         'ir': {'value': .03},
         'vol': {'value': 3},
         'position_limit': {'value': 100},
