@@ -12,7 +12,7 @@ from optibook.common_types import OptionKind
 
 
 class MarketMaker:
-    def __init__(self, instrument, credit=0.03, volume=80, credit_max=0.1, ir=.03, vol=3, position_limit=100, tick_size=0.1):
+    def __init__(self, instrument, credit=0.03, volume=80, ir=.03, vol=3, position_limit=100, tick_size=0.1):
         self.primal = instrument
         # trading environment and exchange resolution parameters
         self.interest_rate = ir
@@ -22,7 +22,7 @@ class MarketMaker:
         # market making algorithm hyperparameters
         self.c0 = credit
         self.v0 = volume
-        self.cmax = credit_max
+        
         
     def get_traded_orders(self, exchange):
         """
@@ -219,8 +219,8 @@ if __name__ == "__main__":
     exchange.connect()
     market_maker = OptionMarketMaker(exchange.get_instruments()['NVDA_202306_050P'])
     
-    credit_ic_mode = 'linear-advocate'
-    volume_ic_mode = 'linear-advocate'
+    credit_ic_mode = 'constant' # ['constant', 'rigid', 'linear-advocate']
+    volume_ic_mode = 'linear-deprecate' # ['constant', 'linear-advocate', 'linear-deprecate']
     wait_time = 1
     
     while True:
