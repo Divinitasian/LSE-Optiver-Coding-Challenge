@@ -13,7 +13,7 @@ from market_maker import OptionMarketMaker, FutureMarketMaker, StockMarketMaker
 from libs import get_bid_ask, clear_orders, clear_position
 from trade import underlying_hash, market_makers_hash
 
-project_name = 'Optiver-market-making-all'
+project_name = 'Optiver-market-making'
 
 
 # 🐝 Step 1: Define the trade function that takes in hyperparameter 
