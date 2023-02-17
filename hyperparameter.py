@@ -52,6 +52,10 @@ def main():
     run = wandb.init(project=project_name)
     exchange = Exchange()
     exchange.connect()
+    # clear all orders
+    clear_orders(exchange)
+    clear_position(exchange)
+    
     all_instruments = exchange.get_instruments()
     # note that we define values from `wandb.config` instead of 
     # defining hard values
@@ -88,10 +92,12 @@ def main():
             wandb.config.position_limit,
             wandb.config.tick_size
             )
-            
-    # Trading
+    
+    # Initializing
     pnl_0 = exchange.get_pnl()
     epochs = wandb.config.epochs
+    
+    # Trading
     for epoch in np.arange(1, epochs):
         pnl = trade_one_iteration(
             epoch, 
@@ -102,12 +108,20 @@ def main():
             wandb.config.credit_ic_mode, 
             wandb.config.volume_ic_mode
             )
-            
         wandb.log({
-            'epoch': epoch,
             'PnL': pnl - pnl_0
         })
-            
+        
+    # Clearing
+    clear_orders(exchange)
+    clear_position(exchange)
+    pnl_1 = exchange.get_pnl()
+    tot = pnl_1 - pnl_0
+    print(f'\n The cumulative PnL over the trading loop is {tot}.')
+    wandb.log({
+        'PnL': tot
+    })
+      
             
 # 🐝 Step 2: Define sweep config     
 sweep_configuration = {
@@ -116,6 +130,10 @@ sweep_configuration = {
     'metric': {
         'goal': 'maximize',
         'name': 'PnL'
+    },
+    'early_terminate': {
+        'type': 'hyperband',
+        'min_iter': 3
     },
     'parameters': {
         'credit': {
@@ -136,10 +154,7 @@ sweep_configuration = {
                 'constant', 'linear-advocate', 'linear-deprecate'
                 ]
         },
-        'wait_time': {
-            'max': 2,
-            'min': .2
-        },
+        'wait_time': {'value': .2},
         'instrument_id': {'value': 'NVDA_202306_050P'},
         'underlying_id': {'value': 'NVDA'},
         'epochs': {'value': 1000},
@@ -156,4 +171,4 @@ sweep_configuration = {
 sweep_id = wandb.sweep(sweep=sweep_configuration, project=project_name)
 
 # 🐝 Step 4: Call to `wandb.agent` to start a sweep
-wandb.agent(sweep_id, function=main, count=100)
+wandb.agent(sweep_id, function=main, count=50)
