@@ -5,9 +5,15 @@ import time, math
 import logging
 logging.getLogger('client').setLevel('ERROR')
 
+import wandb
+wandb.login()
+
 from optibook.synchronous_client import Exchange
 from market_maker import OptionMarketMaker, FutureMarketMaker, StockMarketMaker
 from libs import get_bid_ask
+from trade import underlying_hash
+
+project_name = 'Optiver-market-making'
 
 
 # 🐝 Step 1: Define the trade function that takes in hyperparameter 
@@ -37,3 +43,117 @@ def trade_one_iteration(iteration, market_maker, exchange, underlying_id, wait_t
     print(f'\nSleeping for {wait_time} seconds.')
     time.sleep(wait_time)
     return exchange.get_pnl()
+    
+    
+def main():
+    # Use the wandb.init() API to generate a background process 
+    # to sync and log data as a Weights and Biases run.
+    # Optionally provide the name of the project. 
+    run = wandb.init(project=project_name)
+    exchange = Exchange()
+    exchange.connect()
+    all_instruments = exchange.get_instruments()
+    # note that we define values from `wandb.config` instead of 
+    # defining hard values
+    instrument_id = wandb.config.instrument_id
+    
+    # Create market maker
+    if instrument_id[-1] == 'C' or instrument_id[-1] == 'P':
+        market_maker = OptionMarketMaker(
+            all_instruments[instrument_id],
+            wandb.config.credit,
+            wandb.config.volume,
+            wandb.config.ir,
+            wandb.config.vol,
+            wandb.config.position_limit,
+            wandb.config.tick_size
+            )
+    elif instrument_id[-1] == 'F':
+        market_maker = FutureMarketMaker(
+            all_instruments[instrument_id],
+            wandb.config.credit,
+            wandb.config.volume,
+            wandb.config.ir,
+            wandb.config.vol,
+            wandb.config.position_limit,
+            wandb.config.tick_size
+            )
+    else:
+        market_maker = StockMarketMaker(
+            all_instruments[instrument_id],
+            wandb.config.credit,
+            wandb.config.volume,
+            wandb.config.ir,
+            wandb.config.vol,
+            wandb.config.position_limit,
+            wandb.config.tick_size
+            )
+            
+    # Trading
+    pnl_0 = exchange.get_pnl()
+    epochs = wandb.config.epochs
+    for epoch in np.arange(1, epochs):
+        pnl = trade_one_iteration(
+            epoch, 
+            market_maker, 
+            exchange, 
+            wandb.config.underlying_id, 
+            wandb.config.wait_time, 
+            wandb.config.credit_ic_mode, 
+            wandb.config.volume_ic_mode
+            )
+            
+        wandb.log({
+            'epoch': epoch,
+            'PnL': pnl - pnl_0
+        })
+            
+            
+# 🐝 Step 2: Define sweep config     
+sweep_configuration = {
+    'method': 'random',
+    'name': 'individual instrument',
+    'metric': {
+        'goal': 'maximize',
+        'name': 'PnL'
+    },
+    'parameters': {
+        'credit': {
+            'max': 0.1, 
+            'min': 0.01
+        },
+        'volume': {
+            'max': 100, 
+            'min': 10
+        },
+        'credit_ic_mode': {
+            'values': [
+                'constant', 'rigid', 'linear-advocate'
+                ]
+        },
+        'volume_ic_mode': {
+            'values': [
+                'constant', 'linear-advocate', 'linear-deprecate'
+                ]
+        },
+        'wait_time': {
+            'max': 2,
+            'min': .2
+        },
+        'instrument_id': {'value': 'NVDA_202306_050P'},
+        'underlying_id': {'value': 'NVDA'},
+        'epochs': {'value': 1000},
+        'ir': {'value': .03},
+        'vol': {'value': 3},
+        'position_limit': {'value': 100},
+        'tick_size': {'value': .1}
+    }
+}
+
+
+
+# 🐝 Step 3: Initialize sweep by passing in config
+sweep_id = wandb.sweep(sweep=sweep_configuration, project=project_name)
+
+# 🐝 Step 4: Call to `wandb.agent` to start a sweep
+wandb.agent(sweep_id, function=main, count=100)
