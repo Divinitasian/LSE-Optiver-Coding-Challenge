@@ -6,23 +6,22 @@ logging.getLogger('client').setLevel('ERROR')
 from black_scholes import call_value, put_value, call_delta, put_delta
 from libs import calculate_current_time_to_date, round_down_to_tick, round_up_to_tick
 from libs import get_bid_ask
-from libs import INTEREST_RATE, VOLATILITY, POSITION_LIMIT, TICK_SIZE
 
 from optibook.synchronous_client import Exchange
 from optibook.common_types import OptionKind
 
 
 class MarketMaker:
-    def __init__(self, instrument):
+    def __init__(self, instrument, credit=0.03, volume=80, ir=.03, vol=3, position_limit=100, tick_size=0.1):
         self.primal = instrument
-
-        self.interest_rate = INTEREST_RATE
-        self.volatility = VOLATILITY
-        self.position_limit = POSITION_LIMIT
-        self.tick_size = TICK_SIZE
-        
-        self.c0 = 0.03
-        self.v0 = 80
+        # trading environment and exchange resolution parameters
+        self.interest_rate = ir
+        self.volatility = vol
+        self.position_limit = position_limit
+        self.tick_size = tick_size
+        # market making algorithm hyperparameters
+        self.c0 = credit
+        self.v0 = volume
         
         
     def get_traded_orders(self, exchange):
