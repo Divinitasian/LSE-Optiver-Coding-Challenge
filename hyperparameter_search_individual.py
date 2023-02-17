@@ -29,7 +29,7 @@ def trade_one_iteration(iteration, market_maker, exchange, underlying_id, wait_t
     if stock_value is None:
         print('Empty stock order book on bid or ask-side, or both, unable to update option prices.')
         time.sleep(wait_time)
-        return exchange.get_pnl()
+        return exchange.get_pnl(), exchange.get_positions()[market_maker.primal.instrument_id]
         
 
     stock_bid, stock_ask = stock_value
@@ -41,7 +41,7 @@ def trade_one_iteration(iteration, market_maker, exchange, underlying_id, wait_t
     
     print(f'\nSleeping for {wait_time} seconds.')
     time.sleep(wait_time)
-    return exchange.get_pnl()
+    return exchange.get_pnl(), exchange.get_positions()[market_maker.primal.instrument_id]
     
     
 def main():
@@ -98,7 +98,7 @@ def main():
     
     # Trading
     for epoch in np.arange(1, epochs):
-        pnl = trade_one_iteration(
+        pnl, pos = trade_one_iteration(
             epoch, 
             market_maker, 
             exchange, 
@@ -108,7 +108,8 @@ def main():
             wandb.config.volume_ic_mode
             )
         wandb.log({
-            'PnL': pnl - pnl_0
+            'PnL': pnl - pnl_0,
+            'Position': pos
         })
         
     # Clearing
@@ -118,13 +119,14 @@ def main():
     tot = pnl_1 - pnl_0
     print(f'\n The cumulative PnL over the trading loop is {tot}.')
     wandb.log({
-        'PnL': tot
+        'PnL': tot,
+        'Position': 0
     })
       
             
 # 🐝 Step 2: Define sweep config     
 sweep_configuration = {
-    'method': 'random',
+    'method': 'grid',
     'name': 'individual instrument',
     'metric': {
         'goal': 'maximize',
@@ -135,14 +137,16 @@ sweep_configuration = {
         'min_iter': 3
     },
     'parameters': {
-        'credit': {
-            'max': 0.1, 
-            'min': 0.01
-        },
-        'volume': {
-            'max': 100, 
-            'min': 10
-        },
+        # 'credit': {
+        #     'max': 0.1, 
+        #     'min': 0.01
+        # },
+        'credit': {'value': .03},
+        # 'volume': {
+        #     'max': 100, 
+        #     'min': 10
+        # },
+        'volume': {'value': 80},
         'credit_ic_mode': {
             'values': [
                 'constant', 'rigid', 'linear-advocate'
@@ -172,4 +176,4 @@ sweep_configuration = {
 sweep_id = wandb.sweep(sweep=sweep_configuration, project=project_name)
 
 # 🐝 Step 4: Call to `wandb.agent` to start a sweep
-wandb.agent(sweep_id, function=main, count=30)
+wandb.agent(sweep_id, function=main, count=27)
