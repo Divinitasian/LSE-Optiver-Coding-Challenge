@@ -22,9 +22,7 @@ class MarketMaker:
         self.tick_size = TICK_SIZE
         
         self.c0 = 0.03
-
-        self.volume_bid = 80
-        self.volume_ask = 80
+        self.v0 = 80
         
         
     def get_traded_orders(self, exchange):
@@ -91,7 +89,25 @@ class MarketMaker:
                 order_type='limit',
             )
             
-            
+    
+    def select_volumes(self, exchange, ic_mode):
+        if ic_mode == 'constant':
+            self.volume_bid = self.v0
+            self.volume_ask = self.v0
+        elif ic_mode == 'linear':
+            self.volume_bid = self.v0
+            self.volume_ask = self.v0            
+            instrument_id = self.primal.instrument_id
+            position = exchange.get_positions()[instrument_id]
+            factor = 1 - abs(position) / self.position_limit
+            if position > 0:
+                self.volume_bid = int(self.volume_bid * factor)
+            elif position < 0:
+                self.volume_ask = int(self.volume_ask * factor)
+        else:
+            raise NotImplementedError(f"The volume {ic_mode} mode for inventory management has not been implemented.")
+                
+                
     def select_credits(self, exchange, ic_mode):
         if ic_mode == 'constant':
             self.credit_bid = self.c0
@@ -116,7 +132,7 @@ class MarketMaker:
             elif position < 0:
                 self.credit_bid *= factor
         else:
-            raise NotImplementedError(f"The {ic_mode} mode for inventory management has not been implemented.")
+            raise NotImplementedError(f"The credit {ic_mode} mode for inventory management has not been implemented.")
                 
 
 class StockMarketMaker(MarketMaker):
@@ -169,7 +185,8 @@ if __name__ == "__main__":
     exchange.connect()
     market_maker = OptionMarketMaker(exchange.get_instruments()['NVDA_202306_050P'])
     
-    ic_mode = 'rigid'
+    credit_ic_mode = 'rigid'
+    volume_ic_mode = 'linear'
     wait_time = 1
     
     while True:
@@ -188,7 +205,8 @@ if __name__ == "__main__":
     
         stock_bid, stock_ask = stock_value
         theoretical_bid_price, theoretical_ask_price = market_maker.compute_fair_quotes(stock_bid.price, stock_ask.price)
-        market_maker.select_credits(exchange, ic_mode)
+        market_maker.select_credits(exchange, credit_ic_mode)
+        market_maker.select_volumes(exchange, volume_ic_mode)
         market_maker.cancel_orders(exchange)
         market_maker.update_limit_orders(exchange, theoretical_bid_price, theoretical_ask_price)
         
