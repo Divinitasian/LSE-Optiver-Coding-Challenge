@@ -289,8 +289,33 @@ def detect_arbitrage(best_bid_price, best_ask_price, theoretical_bid_price, theo
     else:
         primal_side = None
     return primal_side
+    
+    
+def exponential_credit(cmin, cmax, pmax, pmin, position_size):
+    k = (np.log(cmax) - np.log(cmin)) / (pmax - pmin)
+    b = np.log(cmin) - k * pmin
+    return np.exp(k * position_size + b)
+
+
+def linear_credit(cmin, cmax, pmax, pmin, position_size):
+    k = (cmax - cmin) / (pmax - pmin)
+    b = cmin - k * pmin
+    return k * position_size + b
                 
                 
+def slippery_credit(side, position, c0, cmax, p_threshold, p_limit):
+    if side == 'ask':
+        position = - position
+    if position < - p_threshold:
+        return 0
+    elif position < 0:
+        return linear_credit(0, c0, 0, -p_threshold, position)
+    elif position < p_threshold:
+        return c0
+    elif position <= p_limit:
+        return exponential_credit(c0, cmax, p_limit, p_threshold, position)
+        
+                    
 if __name__ == "__main__":
     exchange = Exchange()
     exchange.connect()
