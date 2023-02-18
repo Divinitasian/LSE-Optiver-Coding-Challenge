@@ -132,10 +132,10 @@ sweep_configuration = {
         'goal': 'maximize',
         'name': 'PnL'
     },
-    'early_terminate': {
-        'type': 'hyperband',
-        'min_iter': 3
-    },
+    # 'early_terminate': {
+    #     'type': 'hyperband',
+    #     'min_iter': 3
+    # },
     'parameters': {
         # 'credit': {
         #     'max': 0.1, 
