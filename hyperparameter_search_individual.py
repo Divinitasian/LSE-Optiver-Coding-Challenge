@@ -142,29 +142,29 @@ sweep_configuration = {
             'min': 0.01
         },
         # 'credit': {'value': .03},
-        # 'volume': {
-        #     'max': 100, 
-        #     'min': 10
-        # },
-        'volume': {'value': 80},
-        # 'credit_ic_mode': {
-        #     'values': [
-        #         'constant', 'rigid', 'linear-advocate', 'slippery'
-        #         ]
-        # },
-        'credit_ic_mode': {'value': 'slippery'},
-        # 'volume_ic_mode': {
-        #     'values': [
-        #         'constant', 'linear-advocate', 'linear-deprecate'
-        #         ]
-        # },
-        'volume_ic_mode': {'value': 'constant'},
+        'volume': {
+            'max': 100, 
+            'min': 10
+        },
+        # 'volume': {'value': 80},
+        'credit_ic_mode': {
+            'values': [
+                'constant', 'rigid', 'linear-advocate', 'slippery'
+                ]
+        },
+        # 'credit_ic_mode': {'value': 'slippery'},
+        'volume_ic_mode': {
+            'values': [
+                'constant', 'linear-advocate', 'linear-deprecate'
+                ]
+        },
+        # 'volume_ic_mode': {'value': 'constant'},
         'instrument_id': {
-            'value': 'NVDA_202306_030C'
+            'value': 'NVDA_202306_030P'
         },
         'wait_time': {'value': .2},
         'underlying_id': {'value': 'NVDA'},
-        'epochs': {'value': 2000},
+        'epochs': {'value': 1000},
         'ir': {'value': .03},
         'vol': {'value': 3},
         'position_limit': {'value': 100},
