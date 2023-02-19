@@ -292,9 +292,9 @@ def detect_arbitrage(best_bid_price, best_ask_price, theoretical_bid_price, theo
     
     
 def exponential_credit(cmin, cmax, pmax, pmin, position_size):
-    k = (np.log(cmax) - np.log(cmin)) / (pmax - pmin)
-    b = np.log(cmin) - k * pmin
-    return np.exp(k * position_size + b)
+    k = (math.log(cmax) - math.log(cmin)) / (pmax - pmin)
+    b = math.log(cmin) - k * pmin
+    return math.exp(k * position_size + b)
 
 
 def linear_credit(cmin, cmax, pmax, pmin, position_size):
