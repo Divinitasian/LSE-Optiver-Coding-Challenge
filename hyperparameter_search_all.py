@@ -125,7 +125,7 @@ sweep_configuration = {
                 ]
         },
         'wait_time': {'value': .2},
-        'epochs': {'value': 1000},
+        'epochs': {'value': 100},
         'ir': {'value': .03},
         'vol': {'value': 3},
         'position_limit': {'value': 100},
@@ -139,4 +139,4 @@ sweep_configuration = {
 sweep_id = wandb.sweep(sweep=sweep_configuration, project=project_name)
 
 # 🐝 Step 4: Call to `wandb.agent` to start a sweep
-wandb.agent(sweep_id, function=main, count=30)
+wandb.agent(sweep_id, function=main, count=100)
