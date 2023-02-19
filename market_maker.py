@@ -5,7 +5,7 @@ logging.getLogger('client').setLevel('ERROR')
 
 from black_scholes import call_value, put_value, call_delta, put_delta
 from libs import calculate_current_time_to_date, round_down_to_tick, round_up_to_tick
-from libs import get_bid_ask
+from libs import get_bid_ask, slippery_credit
 
 from optibook.synchronous_client import Exchange
 from optibook.common_types import OptionKind
@@ -22,7 +22,7 @@ class MarketMaker:
         # market making algorithm hyperparameters
         self.c0 = credit
         self.v0 = volume
-        
+
         
     def get_traded_orders(self, exchange):
         """
@@ -117,7 +117,7 @@ class MarketMaker:
             self.volume_ask = v
         elif position < 0:
             self.volume_bid = v
-        
+    
     
     def select_volumes(self, exchange, ic_mode):
         if ic_mode == 'constant':
@@ -157,7 +157,19 @@ class MarketMaker:
         elif position == -self.position_limit:
             self.credit_bid = 0        
     
-                
+    
+    def _credit_slippery(self, exchange):
+        instrument_id = self.primal.instrument_id
+        position = exchange.get_positions()[instrument_id]
+        cmax = .5
+        self.credit_bid = slippery_credit(
+            'bid', position, self.c0, cmax, self.v0, self.position_limit
+            )
+        self.credit_ask = slippery_credit(
+            'ask', position, self.c0, cmax, self.v0, self.position_limit
+            )
+
+            
     def select_credits(self, exchange, ic_mode):
         if ic_mode == 'constant':
             self._credit_constant()
@@ -165,6 +177,8 @@ class MarketMaker:
             self._credit_rigid(exchange)
         elif ic_mode == 'linear-advocate':
             self._credit_linear_advocate(exchange)
+        elif ic_mode == 'slippery':
+            self._credit_slippery(exchange)
         else:
             raise NotImplementedError(f"The credit {ic_mode} mode for inventory management has not been implemented.")
                 

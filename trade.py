@@ -46,8 +46,8 @@ if __name__ == "__main__":
     underlying_dict = underlying_hash(all_instruments)
     market_makers_dict = market_makers_hash(all_instruments, underlying_dict)
 
-    credit_ic_mode = 'linear-advocate' # ['constant', 'rigid', 'linear-advocate']
-    volume_ic_mode = 'linear-advocate' # ['constant', 'linear-advocate', 'linear-deprecate']
+    credit_ic_mode = 'slippery' # ['constant', 'rigid', 'linear-advocate', 'slippery']
+    volume_ic_mode = 'linear-deprecate' # ['constant', 'linear-advocate', 'linear-deprecate']
 
     wait_time = .2
     
