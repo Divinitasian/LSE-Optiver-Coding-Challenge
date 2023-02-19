@@ -126,37 +126,39 @@ def main():
             
 # 🐝 Step 2: Define sweep config     
 sweep_configuration = {
-    'method': 'grid',
+    'method': 'random',
     'name': 'individual instrument',
     'metric': {
         'goal': 'maximize',
         'name': 'PnL'
     },
-    # 'early_terminate': {
-    #     'type': 'hyperband',
-    #     'min_iter': 3
-    # },
+    'early_terminate': {
+        'type': 'hyperband',
+        'min_iter': 3
+    },
     'parameters': {
-        # 'credit': {
-        #     'max': 0.1, 
-        #     'min': 0.01
-        # },
-        'credit': {'value': .03},
+        'credit': {
+            'max': 0.1, 
+            'min': 0.01
+        },
+        # 'credit': {'value': .03},
         # 'volume': {
         #     'max': 100, 
         #     'min': 10
         # },
         'volume': {'value': 80},
-        'credit_ic_mode': {
-            'values': [
-                'constant', 'rigid', 'linear-advocate'
-                ]
-        },
-        'volume_ic_mode': {
-            'values': [
-                'constant', 'linear-advocate', 'linear-deprecate'
-                ]
-        },
+        # 'credit_ic_mode': {
+        #     'values': [
+        #         'constant', 'rigid', 'linear-advocate', 'slippery'
+        #         ]
+        # },
+        'credit_ic_mode': {'value': 'slippery'},
+        # 'volume_ic_mode': {
+        #     'values': [
+        #         'constant', 'linear-advocate', 'linear-deprecate'
+        #         ]
+        # },
+        'volume_ic_mode': {'value': 'constant'},
         'instrument_id': {
             'value': 'NVDA_202306_030C'
         },
@@ -176,4 +178,4 @@ sweep_configuration = {
 sweep_id = wandb.sweep(sweep=sweep_configuration, project=project_name)
 
 # 🐝 Step 4: Call to `wandb.agent` to start a sweep
-wandb.agent(sweep_id, function=main, count=27)
+wandb.agent(sweep_id, function=main, count=100)
