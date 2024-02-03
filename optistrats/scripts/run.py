@@ -2,7 +2,7 @@ import datetime as dt
 import time
 import logging
 
-from libs import get_bid_ask
+from optistrats.utils import get_bid_ask
 
 logging.getLogger('client').setLevel('ERROR')
 
@@ -10,7 +10,7 @@ logging.getLogger('client').setLevel('ERROR')
 from optibook.synchronous_client import Exchange
 from optibook.common_types import InstrumentType, OptionKind
 
-from market_maker import OptionMarketMaker, FutureMarketMaker, StockMarketMaker
+from optistrats.strats.market_maker import OptionMarketMaker, FutureMarketMaker, StockMarketMaker
 
 
 def underlying_hash(all_instruments):
@@ -30,7 +30,7 @@ def market_makers_hash(all_instruments, all_instruments_underlying_ids):
     for instrument_id, underlying_id in all_instruments_underlying_ids.items():
         if instrument_id[-1] == 'C' or instrument_id[-1] == 'P':
             market_maker = OptionMarketMaker(all_instruments[instrument_id])
-        elif instrument_id[-1] == 'F':
+        elif instrument_id[-2:] == '_F':
             market_maker = FutureMarketMaker(all_instruments[instrument_id])
         else:
             market_maker = StockMarketMaker(all_instruments[instrument_id])

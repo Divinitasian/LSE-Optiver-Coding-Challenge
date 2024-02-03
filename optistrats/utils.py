@@ -6,7 +6,7 @@ import logging
 from optibook.synchronous_client import Exchange
 from optibook.common_types import OptionKind
 from math import floor, ceil
-from black_scholes import call_value, put_value, call_delta, put_delta
+from optistrats.math.black_scholes import call_value, put_value, call_delta, put_delta
 
 MIN_SELLING_PRICE = 0.10
 MAX_BUYING_PRICE = 100000.00
@@ -17,22 +17,40 @@ TICK_SIZE = 0.10
 
 
 option_ids = [
-    'NVDA_202306_020C',
-    'NVDA_202306_020P',
-    'NVDA_202306_030C',
-    'NVDA_202306_030P',
-    'NVDA_202306_040C',
-    'NVDA_202306_040P',
-    'NVDA_202306_050C',
-    'NVDA_202306_050P',
+    # NVDA
+    'NVDA_202406_050C',
+    'NVDA_202406_050P',
+    'NVDA_202406_075C',
+    'NVDA_202406_075P',
+    'NVDA_202406_100C',
+    'NVDA_202406_100P',
+    'NVDA_202406_120C',
+    'NVDA_202406_120P',
+    ] + [
+    'OB5X_202406_050C',
+    'OB5X_202406_050P',
+    'OB5X_202406_075C',
+    'OB5X_202406_075P',
+    'OB5X_202406_100C',
+    'OB5X_202406_100P',
+    'OB5X_202406_120C',
+    'OB5X_202406_120P',
     ]
 future_ids = [
-    'NVDA_202306_F',
-    'NVDA_202309_F',
-    'NVDA_202312_F'
+    'NVDA_202406_F',
+    'NVDA_202409_F',
+    'NVDA_202412_F'
+    ] + [
+    'OB5X_202406_F',
+    'OB5X_202409_F',
+    'OB5X_202412_F'
     ]
 stock_ids = [
-    'NVDA_DUAL'
+    'NVDA_DUAL',
+    ]
+
+etf_ids = [
+    'OB5X_ETF',
     ]
 
 def calculate_current_time_to_date(expiry_date) -> float:
@@ -315,11 +333,3 @@ def slippery_credit(side, position, c0, cmax, p_threshold, p_limit):
     elif position <= p_limit:
         return exponential_credit(c0, cmax, p_limit, p_threshold, position)
         
-                    
-if __name__ == "__main__":
-    exchange = Exchange()
-    exchange.connect()
-
-    logging.getLogger('client').setLevel('ERROR')
-    clear_orders(exchange)
-    clear_position(exchange)

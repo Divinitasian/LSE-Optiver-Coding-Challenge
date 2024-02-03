@@ -9,8 +9,8 @@ import wandb
 wandb.login()
 
 from optibook.synchronous_client import Exchange
-from market_maker import OptionMarketMaker, FutureMarketMaker, StockMarketMaker
-from libs import get_bid_ask, clear_orders, clear_position
+from optistrats.strats.market_maker import OptionMarketMaker, FutureMarketMaker, StockMarketMaker
+from optistrats.utils import get_bid_ask, clear_orders, clear_position
 
 project_name = 'Optiver-market-making'
 

@@ -1,8 +1,8 @@
 import unittest
-import libs
-from trade import underlying_hash, market_makers_hash
+import optistrats.utils as utils
+from optistrats.scripts.run import underlying_hash, market_makers_hash
 from optibook.synchronous_client import Exchange
-from market_maker import OptionMarketMaker
+from optistrats.strats.market_maker import OptionMarketMaker
 
 from hyperparameter import trade_one_iteration
 
@@ -12,7 +12,7 @@ exchange.connect()
 
 class TestMarketMaker:
     def test_OptionMarketMaker_init_(self):
-        option_id = libs.option_ids[0]
+        option_id = utils.option_ids[0]
         option = exchange.get_instruments()[option_id]
         omm = OptionMarketMaker(option)
         print(omm.primal.instrument_id)
@@ -20,7 +20,7 @@ class TestMarketMaker:
         
         
     def test_OptionMarketMaker__calculate_theoretical_option_value(self):
-        option_id = libs.option_ids[0]
+        option_id = utils.option_ids[0]
         option = exchange.get_instruments()[option_id]
         omm = OptionMarketMaker(option)
         stock_value = 25.8
@@ -28,7 +28,7 @@ class TestMarketMaker:
         
         
     def test_OptionMarketMaker__compute_fair_quotes(self):
-        option_id = libs.option_ids[1]
+        option_id = utils.option_ids[1]
         option = exchange.get_instruments()[option_id]
         omm = OptionMarketMaker(option)     
         print(omm.compute_fair_quotes(25.1, 25.3))
@@ -52,13 +52,13 @@ class TestMarketMaker:
         best_ask_price = .2
         theoretical_bid_price = .05
         theoretical_ask_price = .09
-        assert libs.detect_arbitrage(best_bid_price, best_ask_price, theoretical_bid_price, theoretical_ask_price) == 'ask'
+        assert utils.detect_arbitrage(best_bid_price, best_ask_price, theoretical_bid_price, theoretical_ask_price) == 'ask'
         
         best_bid_price = .1
         best_ask_price = .2
         theoretical_bid_price = .3
         theoretical_ask_price = .4
-        assert libs.detect_arbitrage(best_bid_price, best_ask_price, theoretical_bid_price, theoretical_ask_price) == 'bid'
+        assert utils.detect_arbitrage(best_bid_price, best_ask_price, theoretical_bid_price, theoretical_ask_price) == 'bid'
         
         
 class TestHyperparameterSearch:
