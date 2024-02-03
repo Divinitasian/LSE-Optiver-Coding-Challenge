@@ -38,12 +38,14 @@ class MarketMaker:
                 instrument=self.instrument,
                 price=best_bid+margin,
                 volume=self.volume,
-                side='bid'
+                side='bid',
+                order_type='limit'
             ), 
             PreOrder(
                 instrument=self.instrument,
                 price=best_ask-margin,
                 volume=self.volume,
-                side='ask'
+                side='ask',
+                order_type='limit'
             )
         )
