@@ -2,9 +2,9 @@ import math
 import logging
 import datetime as dt
 import time
-from libs import calculate_current_time_to_date, expiry_in_years
-from libs import clear_position, print_positions_and_pnl
-from libs import trade_would_breach_position_limit, check_and_get_best_bid_ask
+from optistrats.utils import calculate_current_time_to_date, expiry_in_years
+from optistrats.utils import clear_position, print_positions_and_pnl
+from optistrats.utils import trade_would_breach_position_limit, check_and_get_best_bid_ask
 from optibook.synchronous_client import Exchange
 from optibook.common_types import InstrumentType
 

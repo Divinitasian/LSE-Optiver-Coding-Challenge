@@ -6,7 +6,7 @@ import logging
 from optibook.synchronous_client import Exchange
 from optibook.common_types import OptionKind
 from math import floor, ceil
-from black_scholes import call_value, put_value, call_delta, put_delta
+from optistrats.math.black_scholes import call_value, put_value, call_delta, put_delta
 
 MIN_SELLING_PRICE = 0.10
 MAX_BUYING_PRICE = 100000.00

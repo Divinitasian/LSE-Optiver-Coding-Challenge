@@ -3,9 +3,9 @@ import time, math
 import logging
 logging.getLogger('client').setLevel('ERROR')
 
-from black_scholes import call_value, put_value, call_delta, put_delta
-from libs import calculate_current_time_to_date, round_down_to_tick, round_up_to_tick
-from libs import get_bid_ask, slippery_credit
+from optistrats.math.black_scholes import call_value, put_value, call_delta, put_delta
+from optistrats.utils import calculate_current_time_to_date, round_down_to_tick, round_up_to_tick
+from optistrats.utils import get_bid_ask, slippery_credit
 
 from optibook.synchronous_client import Exchange
 from optibook.common_types import OptionKind
