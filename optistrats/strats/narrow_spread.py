@@ -1,7 +1,7 @@
 """
 The narrow-spread strategy.
 """
-
+import typing
 from optibook.common_types import Instrument, OrderStatus
 from optistrats.utils import TICK_SIZE, INITIAL_VOLUME
 
@@ -18,16 +18,25 @@ class MarketMaker:
         self.ask_volume = ask_volume
         self.risk_premium = risk_premium
 
-    def set_bid_volume(self, value) -> None:
-        self.bid_volume = value
-    
-    def set_ask_volume(self, value) -> None:
-        self.ask_volume = value
+    def set_volume(self, value: int, side: str) -> None:
+        is_valid = isinstance(value, int) and (0 < value < 100)
+        if not is_valid:
+            raise ValueError(f"cannot set value={value}.")
+        
+        if side == 'bid':
+            self.bid_volume = value
+        elif side == 'ask':
+            self.ask_volume = value
+        else:
+            raise ValueError(f"{side} side not supported. Choose bid or ask.")
 
-    def set_risk_premium(self, value) -> None:
+    def set_risk_premium(self, value: float) -> None:
+        is_valid = isinstance(value, float) and value > 0
+        if not is_valid:
+            raise ValueError(f"cannot set risk premium={value}.")
         self.risk_premium = value
 
-    def action(self, best_bid, best_ask) -> tuple:
+    def action(self, best_bid, best_ask) -> typing.Tuple[OrderStatus]:
         """If the spread is large, we narrow it. Otherwise, we join it.
 
         Parameters
