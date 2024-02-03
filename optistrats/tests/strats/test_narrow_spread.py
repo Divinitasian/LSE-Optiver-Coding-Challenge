@@ -13,7 +13,13 @@ agent = NSMarketMaker(
 )
 
 def test_set_volume():
-    assert False
+    try:
+        agent.set_volume(-1, side='bid')
+    except ValueError:
+        assert True
+    value = 30
+    agent.set_volume(value, side='ask')
+    assert agent.ask_volume == value
 
 def test_set_risk_premium():
     assert False
