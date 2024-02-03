@@ -333,11 +333,3 @@ def slippery_credit(side, position, c0, cmax, p_threshold, p_limit):
     elif position <= p_limit:
         return exponential_credit(c0, cmax, p_limit, p_threshold, position)
         
-                    
-if __name__ == "__main__":
-    exchange = Exchange()
-    exchange.connect()
-
-    logging.getLogger('client').setLevel('ERROR')
-    clear_orders(exchange)
-    clear_position(exchange)

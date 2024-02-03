@@ -1,6 +1,6 @@
 import unittest
 import optistrats.utils as utils
-from optistrats.trade import underlying_hash, market_makers_hash
+from optistrats.scripts.run import underlying_hash, market_makers_hash
 from optibook.synchronous_client import Exchange
 from optistrats.strats.market_maker import OptionMarketMaker
 
