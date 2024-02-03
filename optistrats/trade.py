@@ -30,7 +30,7 @@ def market_makers_hash(all_instruments, all_instruments_underlying_ids):
     for instrument_id, underlying_id in all_instruments_underlying_ids.items():
         if instrument_id[-1] == 'C' or instrument_id[-1] == 'P':
             market_maker = OptionMarketMaker(all_instruments[instrument_id])
-        elif instrument_id[-1] == 'F':
+        elif instrument_id[-2:] == '_F':
             market_maker = FutureMarketMaker(all_instruments[instrument_id])
         else:
             market_maker = StockMarketMaker(all_instruments[instrument_id])

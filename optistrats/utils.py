@@ -17,22 +17,40 @@ TICK_SIZE = 0.10
 
 
 option_ids = [
-    'NVDA_202406_020C',
-    'NVDA_202406_020P',
-    'NVDA_202406_030C',
-    'NVDA_202406_030P',
-    'NVDA_202406_040C',
-    'NVDA_202406_040P',
+    # NVDA
     'NVDA_202406_050C',
     'NVDA_202406_050P',
+    'NVDA_202406_075C',
+    'NVDA_202406_075P',
+    'NVDA_202406_100C',
+    'NVDA_202406_100P',
+    'NVDA_202406_120C',
+    'NVDA_202406_120P',
+    ] + [
+    'OB5X_202406_050C',
+    'OB5X_202406_050P',
+    'OB5X_202406_075C',
+    'OB5X_202406_075P',
+    'OB5X_202406_100C',
+    'OB5X_202406_100P',
+    'OB5X_202406_120C',
+    'OB5X_202406_120P',
     ]
 future_ids = [
     'NVDA_202406_F',
     'NVDA_202409_F',
     'NVDA_202412_F'
+    ] + [
+    'OB5X_202406_F',
+    'OB5X_202409_F',
+    'OB5X_202412_F'
     ]
 stock_ids = [
-    'NVDA_DUAL'
+    'NVDA_DUAL',
+    ]
+
+etf_ids = [
+    'OB5X_ETF',
     ]
 
 def calculate_current_time_to_date(expiry_date) -> float:

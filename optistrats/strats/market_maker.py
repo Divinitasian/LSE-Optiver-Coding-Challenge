@@ -231,7 +231,7 @@ class OptionMarketMaker(MarketMaker):
 if __name__ == "__main__":
     exchange = Exchange()
     exchange.connect()
-    market_maker = OptionMarketMaker(exchange.get_instruments()['NVDA_202306_050P'])
+    market_maker = OptionMarketMaker(exchange.get_instruments()['NVDA_202406_050P'])
     
     credit_ic_mode = 'constant' # ['constant', 'rigid', 'linear-advocate']
     volume_ic_mode = 'linear-deprecate' # ['constant', 'linear-advocate', 'linear-deprecate']
