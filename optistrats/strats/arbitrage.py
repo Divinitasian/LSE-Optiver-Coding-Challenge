@@ -110,7 +110,7 @@ class FutureSpotArb(Arbitrageur):
 # Trading - Start here #
 ###########################
 
-if False: 
+if True: 
     clear_position(exchange)
 
 
