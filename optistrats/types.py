@@ -1,8 +1,8 @@
 from optibook.common_types import Instrument
 
-class PreOrder:
+class TraderOrder:
     """
-    Summary of an order.
+    Summary of an order from the trader.
 
     Attributes
     ----------
