@@ -1,15 +1,19 @@
 """
 Fetch the data from the exchange
 """
+from typing import Dict
 from optibook.synchronous_client import Exchange
-from optibook.common_types import Instrument
+from optibook.common_types import Instrument, PriceBook, OrderStatus
 
 
 class DataBase:
     def __init__(self, exchange: Exchange) -> None:
         self.exchange = exchange
         # static
-        self.instruments = None
+        self.instruments = {
+            instrument: 1
+            for instrument in self.exchange.get_instruments().values()
+        }
         # dynamic
         self.positions = None
         self.last_price_books = None
@@ -36,17 +40,17 @@ class DataBase:
             for instrument in self.exchange.get_tradable_instruments().values()
         }
 
-    def get_instruments(self):
+    def get_instruments(self) -> Dict[Instrument, int]:
         return self.instruments
     
-    def get_position(self, instrument: Instrument):
+    def get_position(self, instrument: Instrument) -> int:
         return self.positions[instrument]
     
-    def get_last_price_book(self, instrument: Instrument):
+    def get_last_price_book(self, instrument: Instrument) -> PriceBook:
         return self.last_price_books[instrument]
     
-    def get_outstanding_order(self, instrument: Instrument):
+    def get_outstanding_order(self, instrument: Instrument) -> Dict[int, OrderStatus]:
         return self.outstanding_orders[instrument]
     
-    def get_tradable_instruments(self):
+    def get_tradable_instruments(self) -> Dict[Instrument, int]:
         return self.tradable_instruments
