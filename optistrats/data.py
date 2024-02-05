@@ -2,6 +2,7 @@
 Fetch the data from the exchange
 """
 from optibook.synchronous_client import Exchange
+from optibook.common_types import Instrument
 
 
 class DataBase:
@@ -38,13 +39,13 @@ class DataBase:
     def get_instruments(self):
         return self.instruments
     
-    def get_position(self, instrument):
+    def get_position(self, instrument: Instrument):
         return self.positions[instrument]
     
-    def get_last_price_book(self, instrument):
+    def get_last_price_book(self, instrument: Instrument):
         return self.last_price_books[instrument]
     
-    def get_outstanding_order(self, instrument):
+    def get_outstanding_order(self, instrument: Instrument):
         return self.outstanding_orders[instrument]
     
     def get_tradable_instruments(self):
