@@ -1,4 +1,5 @@
-from optibook.common_types import Instrument
+import math
+from optibook.common_types import Instrument, OrderStatus
 
 class TraderOrder:
     """
@@ -39,3 +40,8 @@ class TraderOrder:
     def __repr__(self):
         return f'PreOrder(instrument_id={self.instrument.instrument_id}, price={self.price}, ' \
                f'volume={self.volume}, side={self.side}, order_type={self.order_type})'
+    
+    def __eq__(self, other: OrderStatus):
+        return (self.side == other.side) and math.isclose(
+            self.price, other.price, abs_tol=self.instrument.tick_size
+        )
