@@ -28,7 +28,7 @@ class DataBase:
             for instrument in self.instruments
         }
         self.last_price_books = {
-            instrument: self.exchange.get_last_price_book()
+            instrument: self.exchange.get_last_price_book(instrument.instrument_id)
             for instrument in self.instruments
         }
         self.outstanding_orders = {
