@@ -20,17 +20,22 @@ class ExecutionTrader:
         outstanding_orders: Dict[int, OrderStatus]
     ) -> tuple:
         bid_order, ask_order = trader_orders
-        to_cancel = []
-        to_insert = {bid_order: 1, ask_order: 1}
+        self.to_cancel = []
+        self.to_insert = {bid_order: 1, ask_order: 1}
         for order_id, order_status in outstanding_orders.items():
             if bid_order == order_status:
-                to_insert[bid_order] = max(0, to_insert[bid_order] - 1)
+                self.to_insert[bid_order] = max(0, self.to_insert[bid_order] - 1)
             elif ask_order == order_status:
-                to_insert[ask_order] = max(0, to_insert[ask_order] - 1)
+                self.to_insert[ask_order] = max(0, self.to_insert[ask_order] - 1)
             else:
-                to_cancel.append(order_id)
-        to_insert = [order for order, count in to_insert.items() if count > 0 ]
-        return to_cancel, to_insert
+                self.to_cancel.append(order_id)
+
+    def insert_orders(self) -> List[TraderOrder]:
+        return [order for order, count in self.to_insert.items() if count > 0 ]
+    
+    def cancel_orders(self) -> List[int]:
+        return self.to_cancel
+
         
 
 
