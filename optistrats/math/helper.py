@@ -61,7 +61,7 @@ def get_mid_vwap(snapshot: PriceBook):
     mid = (bid_vwap + ask_vwap) / 2
     if mid < 0:
         raise ValueError(f"negative mid with price book snapshot={snapshot}.")
-    return 
+    return mid
     
 def get_spread_vwap(snapshot: PriceBook):
     bid_vwap = get_vwap(snapshot.bids)
