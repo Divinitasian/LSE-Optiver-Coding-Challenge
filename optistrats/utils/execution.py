@@ -3,7 +3,6 @@ Receive trader orders and send/cancel/amend the orders to the exchange.
 """
 import numpy
 from typing import Dict, Tuple, List
-from optistrats.types import TraderOrder
 from optibook.common_types import Instrument, OrderStatus
 from optibook.synchronous_client import Exchange
 
@@ -16,7 +15,7 @@ class ExecutionTrader:
 
     def action(
         self,
-        trader_orders: Tuple[TraderOrder],
+        trader_orders: Tuple[OrderStatus],
         outstanding_orders: Dict[int, OrderStatus]
     ) -> tuple:
         bid_order, ask_order = trader_orders
@@ -30,7 +29,7 @@ class ExecutionTrader:
             else:
                 self.to_cancel.append(order_id)
 
-    def insert_orders(self) -> List[TraderOrder]:
+    def insert_orders(self) -> List[OrderStatus]:
         return [order for order, count in self.to_insert.items() if count > 0 ]
     
     def cancel_orders(self) -> List[int]:

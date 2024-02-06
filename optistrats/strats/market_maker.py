@@ -1,6 +1,6 @@
-from optibook.common_types import Instrument, PriceBook
+from optibook.common_types import Instrument, PriceBook, OrderStatus
 from optistrats.math.helper import format_order_price, get_mid_vwap, get_spread_vwap
-from optistrats.types import TraderOrder
+
 
 class MarketMaker:
     def __init__(
@@ -73,15 +73,17 @@ class MarketMaker:
         volume = 10
         
         return (
-            TraderOrder(
-                self.instrument,
+            OrderStatus(
+                -1,
+                self.instrument.instrument_id,
                 bid,
                 volume,
                 'bid',
                 'limit'
             ),
-            TraderOrder(
-                self.instrument,
+            OrderStatus(
+                -1,
+                self.instrument.instrument_id,
                 ask,
                 volume,
                 'ask',
