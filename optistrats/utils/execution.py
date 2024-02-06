@@ -1,10 +1,12 @@
 """
 Receive trader orders and send/cancel/amend the orders to the exchange.
 """
-import numpy
-from typing import Dict, Tuple, List
+from collections import Counter
+from typing import Dict, Iterable, List
 from optibook.common_types import Instrument, OrderStatus
-from optibook.synchronous_client import Exchange
+
+from optistrats.types import LimitOrder
+
 
 class ExecutionTrader:
     def __init__(
@@ -13,29 +15,45 @@ class ExecutionTrader:
     ) -> None:
         self.instrument = instrument
 
-    def action(
+    def receive(
         self,
-        trader_orders: Tuple[OrderStatus],
+        limit_orders: Iterable[LimitOrder],
         outstanding_orders: Dict[int, OrderStatus]
-    ) -> tuple:
-        bid_order, ask_order = trader_orders
+    ) -> None:
+        """Receive the limit orders and combine with the outstanding orders.
+
+        Parameters
+        ----------
+        limit_orders
+            a sequence of limit orders.
+        outstanding_orders
+            the outstanding orders on the market.
+        """
+        bid_order, ask_order = limit_orders
         self.to_cancel = []
-        self.to_insert = {bid_order: 1, ask_order: 1}
+        self.to_insert = Counter(limit_orders)
         for order_id, order_status in outstanding_orders.items():
             if bid_order == order_status:
-                self.to_insert[bid_order] = max(0, self.to_insert[bid_order] - 1)
+                self.to_insert.subtract(bid_order)
             elif ask_order == order_status:
-                self.to_insert[ask_order] = max(0, self.to_insert[ask_order] - 1)
+                self.to_insert.subtract(ask_order)
             else:
                 self.to_cancel.append(order_id)
 
     def insert_orders(self) -> List[OrderStatus]:
+        """The new order to be inserted.
+
+        Returns
+        -------
+            a list of orders in the exchange-acceptable format.
+        """
         return [order for order, count in self.to_insert.items() if count > 0 ]
     
     def cancel_orders(self) -> List[int]:
+        """The old orders to be cancelled.
+
+        Returns
+        -------
+            a list of order id.
+        """
         return self.to_cancel
-
-        
-
-
-
