@@ -4,7 +4,6 @@ from optistrats.strats.market_maker import MarketMaker
 from optistrats.utils.execution import ExecutionTrader
 from optistrats.utils.data import DataBase
 
-
 def market_making(
     database: DataBase,
     market_maker: MarketMaker,
@@ -12,6 +11,26 @@ def market_making(
     exchange: Exchange,
     rest_in_secs: float
 ) -> None:
+    """Market making strategy.
+    
+    0. The database provides the current market state.
+    1. The market maker decides the limit orders.
+    2. The execution traders decides the old orders to cancel and the new orders to insert.
+    3. Send orders to the exchange
+
+    Parameters
+    ----------
+    database
+        The local database that stores the information from the exchange.
+    market_maker
+        The object of `MarketMaker` class.
+    execution_trader
+        The object of `ExecutionTrader` class.
+    exchange
+        The exchange connected client.
+    rest_in_secs
+        The sleep time after each iteration to control the speed of sending orders to exchange.
+    """
     while True:
         # preceive the market
         instrument = market_maker.instrument
@@ -24,7 +43,7 @@ def market_making(
             snapshot
         )
         # execution trader
-        execution_trader.action(
+        execution_trader.receive(
             trader_orders,
             outstanding_orders
         )
