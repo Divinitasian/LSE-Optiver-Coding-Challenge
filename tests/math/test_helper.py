@@ -15,9 +15,18 @@ def test_format_order_price():
         format_order_price(price, 'ask', tick_size),
         ask_price
     )
+
+def test_get_vwap():
+    l = [
+        PriceVolume(1, 4),
+        PriceVolume(4, 5)
+    ]
+    ans = 8/3
+    assert isclose(get_vwap(l), ans)
+    l = []
     try:
-        price = 0
-        format_order_price(price, 'bid', tick_size)
+        get_vwap(l)
         assert False
-    except:
-        assert True
+    except Exception as e:
+        print(e)
+        assert True 

@@ -26,8 +26,7 @@ def format_order_price(
     Parameters
     ----------
     price
-        the unformatted price. Assume to be positive.
-        Negative price will throw an AssertionError.
+        the unformatted price
     side
         bid or ask
     tick_size
@@ -53,7 +52,7 @@ def get_vwap(price_volume_list: List[PriceVolume]) -> float:
             d += pv.volume
         return n/d
     except:
-        raise ValueError(f"price_volume_list={price_volume_list} in valid.")
+        raise ValueError(f"price_volume_list={price_volume_list} in invalid.")
     
 def get_mid_vwap(snapshot: PriceBook):
     bid_vwap = get_vwap(snapshot.bids)
