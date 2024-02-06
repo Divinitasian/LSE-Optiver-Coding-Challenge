@@ -1,5 +1,5 @@
 from optibook.common_types import Instrument, PriceBook
-from optistrats.utils.math import format_order_price, get_mid_vwap, get_spread_vwap
+from optistrats.math.helper import format_order_price, get_mid_vwap, get_spread_vwap
 from optistrats.types import TraderOrder
 
 class MarketMaker:
