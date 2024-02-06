@@ -17,16 +17,32 @@ def round_up_to_tick(price, tick_size)-> float:
     return ceil(price / tick_size) * tick_size
 
 def format_order_price(
-    price: float,
+    postive_price: float,
     side: str,
     tick_size: float
 ) -> float:
+    """Format the order price using tick size
+
+    Parameters
+    ----------
+    price
+        the unformatted price. Assume to be positive.
+        Negative price will throw an AssertionError.
+    side
+        bid or ask
+    tick_size
+        minimum price change
+
+    Returns
+    -------
+        the formatted price. Should be multiple of tick size.
+        And bid always round down and ask always round up
+    """
+    assert postive_price > 0
     if side == 'bid':
-        return round_down_to_tick(price, tick_size)
-    elif side == 'ask':
-        return round_up_to_tick(price, tick_size)
+        return round_down_to_tick(postive_price, tick_size)
     else:
-        raise NotImplementedError(f"side={side} not supported.")
+        return round_up_to_tick(postive_price, tick_size)
     
 def get_vwap(price_volume_list: List[PriceVolume]) -> float:
     try:
