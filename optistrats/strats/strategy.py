@@ -1,8 +1,8 @@
 import time
 from optibook.synchronous_client import Exchange
 from optistrats.strats.market_maker import MarketMaker
-from optistrats.execution import ExecutionTrader
-from optistrats.data import DataBase
+from optistrats.utils.execution import ExecutionTrader
+from optistrats.utils.data import DataBase
 
 
 def market_making(
