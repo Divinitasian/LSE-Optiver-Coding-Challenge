@@ -1,6 +1,8 @@
 from typing import Tuple
-from optibook.common_types import Instrument, PriceBook, OrderStatus
-from optistrats.math.helper import format_order_price, get_mid_vwap, get_spread_vwap
+from optibook.common_types import Instrument, PriceBook
+
+from optistrats.types import LimitOrder
+from optistrats.math.helper import round_to_tick, get_mid_vwap, get_spread_vwap
 
 
 class MarketMaker:
@@ -57,33 +59,34 @@ class MarketMaker:
         self,
         position: int,
         snapshot: PriceBook
-    ) -> Tuple[OrderStatus]:
+    ) -> Tuple[LimitOrder]:
         # construct the mid
         mid = self.get_fair_value(snapshot)
         mid -= self.get_position_penalty(position, snapshot)
         # compute the spread
         spread = self.get_spread(snapshot)
         # build the limit orders
-        bid = format_order_price(
-            mid - spread / 2, 'bid', self.instrument.tick_size
+        bid = round_to_tick(
+            mid - spread / 2, self.instrument.tick_size, 'bid' 
         )
-        ask = format_order_price(
-            mid + spread / 2, 'ask', self.instrument.tick_size
+        ask = round_to_tick(
+            mid + spread / 2, self.instrument.tick_size, 'ask'
         )
         
         volume = 10
 
-        bid_order = OrderStatus()
-        bid_order.instrument_id = self.instrument.instrument_id
-        bid_order.price = bid
-        bid_order.volume = volume
-        bid_order.side = 'bid'
-        
-        ask_order = OrderStatus()
-        ask_order.instrument_id = self.instrument.instrument_id
-        ask_order.price = ask
-        ask_order.volume = volume
-        ask_order.side = 'ask'
-        
-        return (bid_order, ask_order)
+        return (
+            LimitOrder(
+                self.instrument,
+                bid,
+                volume,
+                'bid'
+            ),
+            LimitOrder(
+                self.instrument,
+                ask,
+                volume,
+                'ask'
+            )
+        )
     

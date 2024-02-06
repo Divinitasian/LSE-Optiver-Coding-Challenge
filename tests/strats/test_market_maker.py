@@ -31,24 +31,21 @@ def test_action():
         0, 
         snapshot
     )
-    assert isclose(bid_order.price, 95.1, abs_tol=0.4)
-    assert isclose(ask_order.price, 104.9, abs_tol=0.4)
+    assert bid_order.price_in_ticksize == 951
+    assert ask_order.price_in_ticksize == 1049
 
     # limit position
     bid_order, ask_order = agent.action(
         -100, 
         snapshot
     )
-    assert isclose(bid_order.price, 105.0, abs_tol=0.4)
-    assert isclose(ask_order.price, 115.0, abs_tol=0.4)
+    assert bid_order.price_in_ticksize == 1050
+    assert ask_order.price_in_ticksize == 1148
 
     bid_order, ask_order = agent.action(
         100, 
         snapshot
     )
-    assert isclose(bid_order.price, 85.0, abs_tol=0.4)
-    assert isclose(ask_order.price, 95.0, abs_tol=0.4)
-    
-
-
+    assert bid_order.price_in_ticksize == 853
+    assert ask_order.price_in_ticksize == 950
     
