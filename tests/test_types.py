@@ -56,12 +56,16 @@ def test_hashable():
         side='ask'
     )
 
-    counter = Counter({
-        bid_limit_order: 1,
-        ask_limit_order: 1
-    })
+    bid_limit_order_2 = LimitOrder(
+        instrument,
+        price_in_ticksize=1002,
+        volume=52,
+        side='bid'
+    )
 
-    assert counter[bid_limit_order] == 1
+    counter = Counter((bid_limit_order, ask_limit_order, bid_limit_order_2))
+
+    assert counter[bid_limit_order] == 2
     
 
 
