@@ -43,7 +43,7 @@ def market_making(
             snapshot
         )
         # execution trader
-        execution_trader.receive(
+        execution_trader.minimize_cost(
             trader_orders,
             outstanding_orders
         )

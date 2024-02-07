@@ -15,30 +15,40 @@ class ExecutionTrader:
     ) -> None:
         self.instrument = instrument
 
-    def receive(
+    def minimize_cost(
         self,
         limit_orders: Iterable[LimitOrder],
         outstanding_orders: Dict[int, OrderStatus]
     ) -> None:
-        """Receive the limit orders and combine with the outstanding orders.
+        """Minimize the trading costs by avoiding the redundant orders.
 
         Parameters
         ----------
         limit_orders
-            a sequence of limit orders.
+            a sequence of limit orders to send.
         outstanding_orders
             the outstanding orders on the market.
         """
-        bid_order, ask_order = limit_orders
-        self.to_cancel = []
-        self.to_insert = Counter(limit_orders)
+        to_keep = set()
+        limit_order_covered = set()
+        unique_limit_orders =  Counter(limit_orders)
         for order_id, order_status in outstanding_orders.items():
-            if bid_order == order_status:
-                self.to_insert.subtract(bid_order)
-            elif ask_order == order_status:
-                self.to_insert.subtract(ask_order)
-            else:
-                self.to_cancel.append(order_id)
+            for limit_order in unique_limit_orders:
+                if order_status == limit_order:
+                    to_keep.add(order_id)
+                    limit_order_covered.add(limit_order)
+
+        self.to_cancel = [
+            id 
+            for id in outstanding_orders \
+                if id not in to_keep
+        ]
+        self.to_insert = [
+            limit_order
+            for limit_order in unique_limit_orders \
+                if limit_order not in limit_order_covered
+        ]
+
 
     def insert_orders(self) -> List[OrderStatus]:
         """The new order to be inserted.
@@ -47,7 +57,7 @@ class ExecutionTrader:
         -------
             a list of orders in the exchange-acceptable format.
         """
-        return [order for order, count in self.to_insert.items() if count > 0 ]
+        return [limit_order.to_order_status() for limit_order in self.to_insert]
     
     def cancel_orders(self) -> List[int]:
         """The old orders to be cancelled.
