@@ -61,10 +61,25 @@ def market_making(
                     side=order.side,
                     order_type=order.order_type
                 )
-        except:
-            logging.info("Skip.")
+        except ArithmeticError as e:
+            logging.info(f"Skip - Due to {e}.")
         finally:
             time.sleep(rest_in_secs)
         
-        
 
+if __name__ == "__main__":
+
+    exchange = Exchange()
+    exchange.connect()
+
+    instruments = list(exchange.get_instruments().values())
+
+    instrument = instruments[0]
+
+    market_making(
+        DataBase(exchange),
+        MarketMaker(instrument),
+        ExecutionTrader(instrument),
+        exchange,
+        rest_in_secs=0.5
+    )
