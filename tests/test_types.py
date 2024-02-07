@@ -1,4 +1,5 @@
 from collections import Counter
+import math
 from optibook.common_types import OrderStatus
 
 from optistrats.types import *
@@ -68,4 +69,14 @@ def test_hashable():
     assert counter[bid_limit_order] == 2
     
 
+def test_to_order_status():
+    bid_limit_order = LimitOrder(
+        instrument,
+        price_in_ticksize=1002,
+        volume=52,
+        side='bid'
+    )
+    
+    order_status = bid_limit_order.to_order_status()
 
+    assert math.isclose(order_status.price, 100.2)

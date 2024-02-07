@@ -55,3 +55,12 @@ class LimitOrder:
                 self.side
             )
         )
+    
+    def to_order_status(self) -> OrderStatus:
+        order_status = OrderStatus()
+        order_status.instrument_id = self.instrument.instrument_id
+        order_status.order_id = -1
+        order_status.price = self.price_in_ticksize * self.instrument.tick_size
+        order_status.side = self.side
+        order_status.volume = self.volume
+        return order_status
