@@ -1,6 +1,9 @@
 from optibook.common_types import Instrument, OrderStatus
 from optistrats.math.helper import round_to_tick
 
+
+sample_instrument = Instrument("sample", tick_size=0.1)
+
 class LimitOrder:	
     """	
     Hashable limit order

@@ -1,16 +1,16 @@
 from math import isclose
 from datetime import datetime
 from datetime import datetime
-from optibook.common_types import PriceVolume, Instrument, OrderStatus
+from optibook.common_types import PriceVolume
 
 from optistrats.strats.market_maker import *
+from optistrats.types import sample_instrument
 
 
 def test_action():
-    instrument = Instrument("sample", tick_size=0.1)
     snapshot = PriceBook(
         timestamp=datetime.now(),
-        instrument_id=instrument.instrument_id,
+        instrument_id= sample_instrument.instrument_id,
         bids=[
             PriceVolume(100, 2),
             PriceVolume(95, 100),
@@ -22,7 +22,7 @@ def test_action():
     )
 
     agent = MarketMaker(
-        instrument, 
+        sample_instrument, 
         position_limit=100        
     )
 
