@@ -56,10 +56,21 @@ class LimitOrder:
             )
         )
     
-    def to_order_status(self) -> OrderStatus:
+    def to_order_status(self, order_id: int = -1) -> OrderStatus:
+        """Create an OrderStatus object and for later communiation with exchange.
+
+        Parameters
+        ----------
+        order_id
+            the order_id of the new object
+
+        Returns
+        -------
+            OrderStatus object
+        """
         order_status = OrderStatus()
         order_status.instrument_id = self.instrument.instrument_id
-        order_status.order_id = -1
+        order_status.order_id = order_id
         order_status.price = self.price_in_ticksize * self.instrument.tick_size
         order_status.side = self.side
         order_status.volume = self.volume
