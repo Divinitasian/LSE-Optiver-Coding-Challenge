@@ -1,7 +1,7 @@
 """
 Fetch the data from the exchange
 """
-from typing import Dict
+from typing import Dict, List
 from optibook.synchronous_client import Exchange
 from optibook.common_types import Instrument, PriceBook, OrderStatus
 
@@ -10,7 +10,7 @@ class DataBase:
     def __init__(self, exchange: Exchange) -> None:
         self.exchange = exchange
         # static
-        self.instruments = set(self.exchange.get_instruments().values())
+        self.instruments = list(self.exchange.get_instruments().values())
         # dynamic
         self.positions = None
         self.last_price_books = None
@@ -34,15 +34,15 @@ class DataBase:
             instrument: self.exchange.get_outstanding_orders(instrument.instrument_id)
             for instrument in self.instruments
         }
-        self.tradable_instruments = set(self.exchange.get_tradable_instruments().values())
+        self.tradable_instruments = list(self.exchange.get_tradable_instruments().values())
 
-    def get_instruments(self) -> Dict[Instrument, int]:
+    def get_instruments(self) -> List[Instrument]:
         """Returns all existing instruments on the exchange
 
         Returns
         -------
-        set[Instrument]
-            a set of the instrument definition.
+        List[Instrument]
+            a list of the instrument definition.
         """
         return self.instruments
     
@@ -92,14 +92,14 @@ class DataBase:
         """
         return self.outstanding_orders[instrument]
     
-    def get_tradable_instruments(self) -> Dict[Instrument, int]:
+    def get_tradable_instruments(self) -> List[Instrument]:
         """
         Returns all tradable instruments on the exchange.
         This excludes instruments which are expired or for which trading is paused.
 
         Returns
         -------
-        set[Instrument]
-            a set of the instrument definition.
+        List[Instrument]
+            a list of the instrument definition.
         """
         return self.tradable_instruments
