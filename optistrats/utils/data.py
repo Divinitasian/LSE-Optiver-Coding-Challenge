@@ -1,6 +1,7 @@
 """
 Fetch the data from the exchange
 """
+import logging
 from typing import Dict, List
 from optibook.synchronous_client import Exchange
 from optibook.common_types import Instrument, PriceBook, OrderStatus
@@ -17,13 +18,21 @@ class DataBase:
         self.outstanding_orders = None
         self.tradable_instruments = None
         self.fetch()
+
+    def run(self, verbose=True) -> None:
+        while True:
+            if verbose: logging.info("Fetching the information from the exchange.")
+            self.fetch()
+            if verbose: logging.info("Information updated.")
+
         
     def fetch(self) -> None:
         """Download the latest market information from the exchange
         """
+        # if not self.exchange.is_connected(): self.exchange.connect()
         positions = self.exchange.get_positions()
         self.positions = {
-            instrument: positions[instrument.instrument_id]
+            instrument: positions.get(instrument.instrument_id, 0)
             for instrument in self.instruments
         }
         self.last_price_books = {

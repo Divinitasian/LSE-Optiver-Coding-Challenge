@@ -16,10 +16,10 @@ def main():
     execution_trader = ExecutionTrader(instrument)
 
     data_thread = threading.Thread(
-        target=database.fetch,
-        name="Market state thread"
+        target=database.run,
+        kwargs={'verbose': True},
+        name="Database"
     )
-    data_thread.start()
     
     strats_thread = threading.Thread(
         target=market_making, 
@@ -32,7 +32,12 @@ def main():
         ),
         kwargs={"rest_in_secs": 0.2}
     )
-    strats_thread.start()
+
+    data_thread.start()
+    # strats_thread.start()
+
+    # strats_thread.join()
+    data_thread.join()
 
 
 if __name__ == "__main__":
