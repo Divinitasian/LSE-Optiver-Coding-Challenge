@@ -184,13 +184,11 @@ def get_pair_option(option_id):
         return pair_option_id + 'C'
 
 
-def get_bid_ask(exchange, instrument_id):
+def get_bid_ask(order_book):
     """
     This function calculates the current midpoint of the order book supplied by the exchange for the instrument
     specified by <instrument_id>, returning None if either side or both sides do not have any orders available.
     """
-    order_book = exchange.get_last_price_book(instrument_id=instrument_id)
-
     # If the instrument doesn't have prices at all or on either side, we cannot calculate a midpoint and return None
     if not (order_book and order_book.bids and order_book.asks):
         return None

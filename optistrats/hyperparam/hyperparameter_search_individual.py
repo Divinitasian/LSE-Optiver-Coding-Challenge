@@ -25,7 +25,8 @@ def trade_one_iteration(iteration, market_maker, exchange, underlying_id, wait_t
     
     market_maker.get_traded_orders(exchange)
     
-    stock_value = get_bid_ask(exchange, underlying_id)
+    order_book = exchange.get_last_price_book(instrument_id=underlying_id)
+    stock_value = get_bid_ask(order_book)
     if stock_value is None:
         print('Empty stock order book on bid or ask-side, or both, unable to update option prices.')
         time.sleep(wait_time)

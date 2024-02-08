@@ -244,8 +244,9 @@ if __name__ == "__main__":
         print(f'-----------------------------------------------------------------')
         
         market_maker.get_traded_orders(exchange)
-    
-        stock_value = get_bid_ask(exchange, 'NVDA')
+
+        order_book = exchange.get_last_price_book(instrument_id='NVDA')
+        stock_value = get_bid_ask(order_book)
         if stock_value is None:
             print('Empty stock order book on bid or ask-side, or both, unable to update option prices.')
             time.sleep(wait_time)
